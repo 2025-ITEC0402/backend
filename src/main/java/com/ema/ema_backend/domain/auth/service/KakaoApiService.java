@@ -4,6 +4,7 @@ import com.ema.ema_backend.domain.auth.dto.KakaoTokenResponse;
 import com.ema.ema_backend.domain.auth.dto.KakaoUserResponse;
 import com.ema.ema_backend.domain.auth.properties.KakaoProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class KakaoApiService {
     private static final String KAKAO_AUTH_BASE_URL = "https://kauth.kakao.com/oauth";
@@ -23,9 +25,12 @@ public class KakaoApiService {
 
 
     public KakaoTokenResponse getAccessToken(String authorizationCode) {
+        log.info("authorizationCode: {}", authorizationCode);
         String url = KAKAO_AUTH_BASE_URL + "/token";
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+
+        log.info("kakaoProperties: {}, {}", kakaoProperties.getClientId(), kakaoProperties.getRedirectUri());
 
         String redirectUri = kakaoProperties.getRedirectUri();
 
@@ -37,17 +42,23 @@ public class KakaoApiService {
 
         RequestEntity<LinkedMultiValueMap<String, String>> request = new RequestEntity<>(body,
                 headers, HttpMethod.POST, URI.create(url));
+        log.info("request: {}", request);
 
         ResponseEntity<KakaoTokenResponse> response = restTemplate.exchange(request,
                 KakaoTokenResponse.class);
+        log.info("Status code: {}", response.getStatusCodeValue());
+        log.info("Raw body: {}", response.getBody());
+
+        log.info("kakao raw response: {}", response.getBody().getAccessToken());
 
         return response.getBody();
     }
 
     public KakaoUserResponse getUserInfo(String accessToken) {
+        log.info("accessToken: {}", accessToken);
         String url = KAKAO_API_BASE_URL + "/me";
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentType(MediaType.valueOf("application/x-www-form-urlencoded;charset=utf-8"));
         headers.setBearerAuth(accessToken);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -58,6 +69,9 @@ public class KakaoApiService {
         ResponseEntity<KakaoUserResponse> response = restTemplate.exchange(
                 url, HttpMethod.POST, request, KakaoUserResponse.class);
 
+        log.info("카카오 사용자 정보 응답 JSON: {}", response.getBody());
+        log.info("Raw body: {}", response.getBody());
+        log.info("getKakaoAccount(): {}", response.getBody().getKakaoAccount());
         if (response.getBody().getKakaoAccount().getEmail() == null) {
             throw new RuntimeException("카카오 계정으로부터 전달받은 이메일이 없습니다.");
         }
