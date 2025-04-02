@@ -1,6 +1,7 @@
 package com.ema.ema_backend.domain.auth.controller;
 
-import com.ema.ema_backend.domain.auth.service.AuthService;
+import com.ema.ema_backend.domain.auth.dto.TokenResponse;
+import com.ema.ema_backend.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,11 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final AuthService authService;
+    private final MemberService memberService;
 
     @GetMapping("/oauth/kakao/login")
-    public ResponseEntity<?> login(@RequestParam("code") String code) {
+    public ResponseEntity<TokenResponse> login(@RequestParam("code") String code) {
+        TokenResponse tokenResponse = memberService.kakaoLogin(code);
 
-        return ResponseEntity
+        return ResponseEntity.ok().body(tokenResponse);
     }
 }
