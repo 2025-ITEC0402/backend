@@ -45,6 +45,7 @@ public class AuthService {
 
     }
 
+
     private void registerMemberIfNotExist(String nickname, String email) {
         Optional<Member> optionalMember = memberRepository.findByEmail(email);
 
@@ -52,4 +53,5 @@ public class AuthService {
             memberService.registerNewMember(nickname, email);
         }
     }
+
 }
