@@ -1,9 +1,7 @@
 package com.ema.ema_backend.domain.member.service;
 
-import com.ema.ema_backend.domain.auth.service.KakaoApiService;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.repository.MemberRepository;
-import com.ema.ema_backend.domain.auth.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
