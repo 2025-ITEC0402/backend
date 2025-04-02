@@ -1,9 +1,12 @@
 package com.ema.ema_backend.domain.auth.jwt;
 
 import com.ema.ema_backend.domain.auth.dto.TokenResponse;
+import com.ema.ema_backend.global.exception.BadRequestException;
+import com.ema.ema_backend.global.exception.TokenExpiredException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +15,7 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 
-//TODO: 싹다 예외처리 다시 할것
+@Slf4j
 @Service
 public class JwtProvider {
     private static final long ACCESS_TEN_HOURS = 1000 * 60 * 60 * 24; //24시간
@@ -27,6 +30,7 @@ public class JwtProvider {
     }
 
     public String generateAccessToken(String email) {
+        log.info("JWT accessToken 생성, email: {}", email);
         return Jwts.builder()
                 .setSubject(email)
                 .claim("tokenType", "access")
@@ -37,7 +41,7 @@ public class JwtProvider {
     }
 
     public String generateRefreshToken(String email) {
-
+        log.info("JWT refreshToken 생성, email: {}", email);
         return Jwts.builder()
                 .setSubject(email)
                 .claim("tokenType", "refresh")
@@ -51,10 +55,10 @@ public class JwtProvider {
     public String extractEmailFromAccessToken(String accessToken) {
         Claims claims = parseClaims(accessToken);
         if (!"access".equals(claims.get("tokenType", String.class))) {
-            throw new RuntimeException("사용된 토큰이 엑세스 토큰이 아닙니다. 요청하신 로직에서는 엑세스 토큰으로만 처리가 가능합니다.");
+            throw new BadRequestException("사용된 토큰이 엑세스 토큰이 아닙니다. 요청하신 로직에서는 엑세스 토큰으로만 처리가 가능합니다.");
         }
         if (claims.getExpiration().before(new Date())) {
-            throw new RuntimeException("액세스 토큰이 만료되었습니다. 리프레시 토큰으로 다시 액세스 토큰을 발급받으세요.");
+            throw new TokenExpiredException("액세스 토큰이 만료되었습니다. 리프레시 토큰으로 다시 액세스 토큰을 발급받으세요.");
         }
         return claims.getSubject();
     }
@@ -62,10 +66,10 @@ public class JwtProvider {
     public String extractEmailFromRefreshToken(String refreshToken) {
         Claims claims = parseClaims(refreshToken);
         if (!"refresh".equals(claims.get("tokenType", String.class))) {
-            throw new RuntimeException("해당 토큰은 리프레쉬 토큰이 아닙니다. 요청하신 로직에서는 리프레쉬 토큰만 사용이 가능합니다.");
+            throw new BadRequestException("해당 토큰은 리프레쉬 토큰이 아닙니다. 요청하신 로직에서는 리프레쉬 토큰만 사용이 가능합니다.");
         }
         if (claims.getExpiration().before(new Date())) {
-            throw new RuntimeException("리프레쉬 토큰이 만료되었습니다. 재로그인을 하세요.");
+            throw new TokenExpiredException("리프레쉬 토큰이 만료되었습니다. 재로그인을 하세요.");
         }
         return claims.getSubject();
     }
@@ -78,7 +82,7 @@ public class JwtProvider {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new TokenExpiredException(e.getMessage());
         }
     }
 

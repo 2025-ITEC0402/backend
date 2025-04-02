@@ -3,6 +3,7 @@ package com.ema.ema_backend.domain.auth.service;
 import com.ema.ema_backend.domain.auth.dto.KakaoTokenResponse;
 import com.ema.ema_backend.domain.auth.dto.KakaoUserResponse;
 import com.ema.ema_backend.domain.auth.properties.KakaoProperties;
+import com.ema.ema_backend.global.exception.ExternalApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -66,7 +67,7 @@ public class KakaoApiService {
 
         log.info("카카오 사용자 정보 응답 JSON: {}", response.getBody());
         if (response.getBody().getKakaoAccount().getEmail() == null) {
-            throw new RuntimeException("카카오 계정으로부터 전달받은 이메일이 없습니다.");
+            throw new ExternalApiException("카카오 계정으로부터 전달받은 이메일이 없습니다.");
         }
         return response.getBody();
     }

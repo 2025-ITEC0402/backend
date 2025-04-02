@@ -1,5 +1,7 @@
 package com.ema.ema_backend.domain.auth.jwt;
 
+import com.ema.ema_backend.global.exception.BadRequestException;
+import com.ema.ema_backend.global.exception.TokenExpiredException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,14 +24,15 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
 
     private static final List<String> EXCLUDED_URLS = List.of(
-            "/api/auth/oauth/kakao/login"
+            "/api/auth/oauth/kakao/login",
+            "/api/auth/refresh"
     );
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
 
-        // ✅ 특정 URL은 토큰 검증 생략
+        // 특정 URL은 토큰 검증 생략
         if (EXCLUDED_URLS.contains(requestURI)) {
             filterChain.doFilter(request, response);
             return;
@@ -49,11 +52,31 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
+            } catch (TokenExpiredException | BadRequestException e) {
+                setErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "ACCESS_TOKEN_ERROR", e.getMessage());
+                return;
             } catch (Exception e) {
-                throw e;
+                setErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED", "유효하지 않은 토큰입니다.");
             }
         }
 
         filterChain.doFilter(request, response); // 토큰 없거나 정상 인증된 경우
+    }
+
+    private void setErrorResponse(HttpServletResponse response, int status, String title, String detail) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        String json = String.format("""
+            {
+              "type": "about:blank",
+              "title": "%s",
+              "status": %d,
+              "detail": "%s"
+            }
+        """, title, status, detail);
+
+        response.getWriter().write(json);
     }
 }
