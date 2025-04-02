@@ -19,7 +19,15 @@ public class Member {
     @NotBlank
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     @Email
     private String email;
+
+    private Member(String name, String email) {
+        this.name = name;
+        this.email = email;
+    }
+    public static Member create(String name, String email) {
+        return new Member(name, email);
+    }
 }
