@@ -38,6 +38,14 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Swagger 관련 경로는 JWT 필터 무시
+        if (requestURI.startsWith("/swagger-ui") || requestURI.startsWith("/v3/api-docs")) {
+            log.info("요청 URI: {}, Authorization: {}", requestURI, request.getHeader("Authorization"));
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
