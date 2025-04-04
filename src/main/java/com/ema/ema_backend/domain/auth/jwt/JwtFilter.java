@@ -25,7 +25,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private static final List<String> EXCLUDED_URLS = List.of(
             "/api/auth/oauth/kakao/login",
-            "/api/auth/refresh"
+            "/api/auth/refresh",
+            "/swagger-ui.html"
+    );
+    private static final List<String> START_WITH_URLS = List.of(
+            "/swagger-ui",
+            "/v3/api-docs"
     );
 
     @Override
@@ -39,7 +44,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         // Swagger 관련 경로는 JWT 필터 무시
-        if (requestURI.startsWith("/swagger-ui") || requestURI.startsWith("/v3/api-docs")) {
+        if (START_WITH_URLS.stream().anyMatch(requestURI::startsWith)) {
             log.info("요청 URI: {}, Authorization: {}", requestURI, request.getHeader("Authorization"));
 
             filterChain.doFilter(request, response);
