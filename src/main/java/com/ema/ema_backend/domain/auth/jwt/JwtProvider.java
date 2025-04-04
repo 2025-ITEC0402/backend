@@ -1,6 +1,6 @@
 package com.ema.ema_backend.domain.auth.jwt;
 
-import com.ema.ema_backend.domain.auth.dto.TokenResponse;
+import com.ema.ema_backend.domain.auth.dto.TokenDto;
 import com.ema.ema_backend.global.exception.BadRequestException;
 import com.ema.ema_backend.global.exception.TokenExpiredException;
 import io.jsonwebtoken.Claims;
@@ -18,9 +18,9 @@ import java.util.Date;
 @Slf4j
 @Service
 public class JwtProvider {
-    private static final long ACCESS_TEN_HOURS = 1000 * 60 * 60 * 24; //24시간
+    public static final long ACCESS_TEN_HOURS = 1000 * 60 * 60 * 24; //24시간
 
-    private static final long REFRESH_SEVEN_DAYS = 1000 * 60 * 60 * 24 * 7; //7일
+    public static final long REFRESH_SEVEN_DAYS = 1000 * 60 * 60 * 24 * 7; //7일
 
     private final Key secretKey;
 
@@ -86,12 +86,12 @@ public class JwtProvider {
         }
     }
 
-    public TokenResponse refreshAccessToken(String refreshToken) {
+    public TokenDto refreshAccessToken(String refreshToken) {
         String email = extractEmailFromRefreshToken(refreshToken);
 
         String newAccessToken = generateAccessToken(email);
         String newRefreshToken = generateRefreshToken(email);
 
-        return new TokenResponse(newAccessToken, newRefreshToken);
+        return new TokenDto(newAccessToken, newRefreshToken);
     }
 }

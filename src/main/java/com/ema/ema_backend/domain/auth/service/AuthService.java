@@ -2,7 +2,7 @@ package com.ema.ema_backend.domain.auth.service;
 
 import com.ema.ema_backend.domain.auth.dto.KakaoTokenResponse;
 import com.ema.ema_backend.domain.auth.dto.KakaoUserResponse;
-import com.ema.ema_backend.domain.auth.dto.TokenResponse;
+import com.ema.ema_backend.domain.auth.dto.TokenDto;
 import com.ema.ema_backend.domain.auth.jwt.JwtProvider;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.repository.MemberRepository;
@@ -25,7 +25,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
 
     @Transactional
-    public TokenResponse kakaoLogin(String code) {
+    public TokenDto kakaoLogin(String code) {
         KakaoTokenResponse tokenResponse = kakaoApiService.getAccessToken(code);
         KakaoUserResponse userResponse = kakaoApiService.getUserInfo(tokenResponse.getAccessToken());
 
@@ -41,7 +41,7 @@ public class AuthService {
         String accessToken = jwtProvider.generateAccessToken(email);
         String refreshToken = jwtProvider.generateRefreshToken(email);
 
-        return new TokenResponse(accessToken, refreshToken);
+        return new TokenDto(accessToken, refreshToken);
 
     }
 
