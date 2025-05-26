@@ -23,6 +23,9 @@ public class Member {
     @Email
     private String email;
 
+    @OneToOne
+    private LearningHistory learningHistory;
+
     private Member(String name, String email) {
         this.name = name;
         this.email = email;
