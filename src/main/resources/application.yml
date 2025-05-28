@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: ema-backend
+
+  profiles:
+    include: secret
+
+  config:
+    import: optional:file:dev.env[.properties]
+
+  servlet:
+    multipart:
+      enabled: false
+    encoding:
+      charset: UTF-8
+      force: true
+
+  jackson:
+    serialization:
+      indent-output: true
+
+  sql:
+    init:
+      mode: always
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        use_sql_comments: true
+    open-in-view: false
+
+  datasource:
+    driver-class-name: ${DRIVER_CLASS_NAME}
+    url: jdbc:mysql://${RDS_HOST}:${RDS_PORT}/${RDS_DB_NAME}
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+    hikari:
+      max-lifetime: 170000
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE
+    org.springframework.security: TRACE
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  tomcat:
+    max-http-form-post-size: 15MB
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
+  redirect-uri: ${KAKAO_REDIRECT_URI}
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
