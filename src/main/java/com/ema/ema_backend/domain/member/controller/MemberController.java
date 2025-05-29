@@ -1,5 +1,6 @@
 package com.ema.ema_backend.domain.member.controller;
 
+import com.ema.ema_backend.domain.member.dto.MemberInfoResponse;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +21,8 @@ public class MemberController {
 
     @GetMapping("/check")
     public ResponseEntity<String> checkPermission(Authentication authentication) {
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
-        if (optionalMember.isPresent()) {
-            return ResponseEntity.ok(optionalMember.get().getEmail());
-        }
-        return ResponseEntity.notFound().build();
+        return memberService.testCheckPermission(authentication);
     }
 
+    // public ResponseEntity<MemberInfoResponse> getMemberInfo(Authentication authentication) {}
 }

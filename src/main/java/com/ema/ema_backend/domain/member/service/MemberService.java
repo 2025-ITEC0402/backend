@@ -1,10 +1,12 @@
 package com.ema.ema_backend.domain.member.service;
 
+import com.ema.ema_backend.domain.member.dto.MemberInfoResponse;
 import com.ema.ema_backend.domain.member.entity.LearningHistory;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.repository.LearningHistoryRepository;
 import com.ema.ema_backend.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,17 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    public Optional<Member> checkPermission(Authentication authentication){
+    private Optional<Member> checkPermission(Authentication authentication){
         return memberRepository.findByEmail(authentication.getName());
     }
+
+    public ResponseEntity<String> testCheckPermission(Authentication authentication){
+        Optional<Member> optionalMember = checkPermission(authentication);
+        if (optionalMember.isPresent()) {
+            return ResponseEntity.ok(optionalMember.get().getEmail());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // public ResponseEntity<MemberInfoResponse> getMemberInfo(Authentication authentication) {}
 }
