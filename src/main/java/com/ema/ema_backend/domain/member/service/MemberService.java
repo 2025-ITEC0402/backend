@@ -6,6 +6,7 @@ import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.repository.LearningHistoryRepository;
 import com.ema.ema_backend.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -44,5 +45,19 @@ public class MemberService {
         return ResponseEntity.notFound().build();
     }
 
-    // public ResponseEntity<MemberInfoResponse> getMemberInfo(Authentication authentication) {}
+    public ResponseEntity<MemberInfoResponse> getMemberInfo(Authentication authentication) {
+        Optional<Member> optionalMember = checkPermission(authentication);
+        if (optionalMember.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Member member = optionalMember.get();
+
+        // 오늘 푼 문제 체크
+        Integer todaySolved = 0;
+
+        // 전체 푼 문제 체크
+        Integer allTimeSolved = 0;
+
+        return new ResponseEntity<>(new MemberInfoResponse(member.getName(), todaySolved, allTimeSolved), HttpStatus.OK);
+    }
 }

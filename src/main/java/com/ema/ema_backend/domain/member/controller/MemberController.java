@@ -24,5 +24,8 @@ public class MemberController {
         return memberService.testCheckPermission(authentication);
     }
 
-    // public ResponseEntity<MemberInfoResponse> getMemberInfo(Authentication authentication) {}
+    @GetMapping()
+    public ResponseEntity<MemberInfoResponse> getMemberInfo(Authentication authentication) {
+        return memberService.getMemberInfo(authentication);
+    }
 }
