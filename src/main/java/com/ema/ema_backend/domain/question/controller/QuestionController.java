@@ -1,15 +1,13 @@
 package com.ema.ema_backend.domain.question.controller;
 
+import com.ema.ema_backend.domain.question.dto.QuestionSet;
 import com.ema.ema_backend.domain.question.dto.QuestionsInfoResponse;
 import com.ema.ema_backend.domain.question.dto.RecommendedQuestionInfoResponse;
 import com.ema.ema_backend.domain.question.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/question")
@@ -30,5 +28,10 @@ public class QuestionController {
     @DeleteMapping("/my-questions")
     public ResponseEntity<Void> deleteMyQuestions(Authentication authentication) {
         return questionService.deleteMyQuestions(authentication);
+    }
+
+    @PostMapping("/generate")
+    public ResponseEntity<QuestionSet> generatePersonalizedQuestion(Authentication authentication) {
+        return questionService.generatePersonalizedQuestion(authentication);
     }
 }
