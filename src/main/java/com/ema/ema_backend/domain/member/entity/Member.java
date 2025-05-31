@@ -6,9 +6,7 @@ import com.ema.ema_backend.global.BaseEntityWithUpdatedAt;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,17 +27,18 @@ public class Member extends BaseEntityWithUpdatedAt {
     @Email
     private String email;
 
+    @Setter
     @OneToOne
     @JoinColumn(name = "learning_history_id")
     private LearningHistory learningHistory;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<MemberQuestion> memberQuestions = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<ChatRoom> chatRooms = new ArrayList<>();
 
-
+    @Builder
     private Member(String name, String email, LearningHistory learningHistory) {
         this.name = name;
         this.email = email;

@@ -1,12 +1,114 @@
 package com.ema.ema_backend.domain.question.controller;
 
+import com.ema.ema_backend.domain.question.dto.QuestionSet;
+import com.ema.ema_backend.domain.question.dto.QuestionsInfoResponse;
+import com.ema.ema_backend.domain.question.dto.RecommendedQuestionInfoResponse;
+import com.ema.ema_backend.domain.question.service.QuestionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/question")
 @RequiredArgsConstructor
 public class QuestionController {
+    private final QuestionService questionService;
 
+    @Operation(
+            summary = "(메인 페이지) 개인 맞춤 문제 추천 조회",
+            description = "JWT 인증 토큰을 기반으로 현재 로그인된 회원에게 추천 문제 목록을 제공합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "추천 문제 조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = RecommendedQuestionInfoResponse.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "인증되지 않음",
+                            content = @Content
+                    )
+            }
+    )
+    @GetMapping("/recommendations")
+    public ResponseEntity<RecommendedQuestionInfoResponse> getQuestionRecommendations(Authentication authentication) {
+        return questionService.getRecommendQuestion(authentication);
+    }
+
+    @Operation(
+            summary = "(문제 풀이 페이지) 랜덤으로 3문제 받아오기",
+            description = "JWT 인증 토큰을 기반으로, 사용자가 아직 풀지 않은 문제 중에서 랜덤으로 3개의 문제를 추천합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "랜덤 문제 추천 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = QuestionsInfoResponse.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "인증되지 않음",
+                            content = @Content
+                    )
+            }
+    )
+    @GetMapping("/random-questions")
+    public ResponseEntity<QuestionsInfoResponse> get3RandomQuestions(Authentication authentication) {
+        return questionService.get3RandomQuestions(authentication);
+    }
+
+    @Operation(
+            summary = "회원의 문제 열람 기록 삭제",
+            description = "JWT 인증 토큰을 기반으로, 현재 로그인된 회원이 푼 문제(풀이 기록)를 모두 삭제합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "204",
+                            description = "문제 풀이 기록 삭제 성공",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "인증되지 않음",
+                            content = @Content
+                    )
+            }
+    )
+    @DeleteMapping("/my-questions")
+    public ResponseEntity<Void> deleteMyQuestions(Authentication authentication) {
+        return questionService.deleteMyQuestions(authentication);
+    }
+
+    @Operation(
+            summary = "개인화된 문제 1개 생성",
+            description = "JWT 인증 토큰을 기반으로, 사용자의 학습 이력 및 추천 정보를 바탕으로 개인화된 문제를 1개 생성합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "개인화 문제 생성 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = QuestionSet.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "인증되지 않음",
+                            content = @Content
+                    )
+            }
+    )
+    @PostMapping("/generate")
+    public ResponseEntity<QuestionSet> generatePersonalizedQuestion(Authentication authentication) {
+        return questionService.generatePersonalizedQuestion(authentication);
+    }
 }

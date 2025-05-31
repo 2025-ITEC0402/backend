@@ -1,5 +1,9 @@
 package com.ema.ema_backend.domain.type;
 
+import com.ema.ema_backend.global.exception.ChapterNotFoundException;
+import lombok.Getter;
+
+@Getter
 public enum ChapterType {
     CHAPTER_1("함수와 모델 (Functions and Models)"),
     CHAPTER_2("극한과 도함수 (Limits and Derivatives)"),
@@ -27,10 +31,6 @@ public enum ChapterType {
         this.chapterName = chapterName;
     }
 
-    public String getChapterName() {
-        return chapterName;
-    }
-
     public static ChapterType getChapterType(String chapterName) {
         for (ChapterType chapterType : values()) {
             if (chapterType.getChapterName().equals(chapterName)) {
@@ -38,5 +38,13 @@ public enum ChapterType {
             }
         }
         return INVALID;
+    }
+
+    public static ChapterType fromStringNumber(String number) {
+        try {
+            return ChapterType.valueOf("CHAPTER_" + number);
+        } catch (IllegalArgumentException e) {
+            throw new ChapterNotFoundException("해당하는 챕터가 없습니다: " + number);
+        }
     }
 }
