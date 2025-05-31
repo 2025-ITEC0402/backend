@@ -58,6 +58,9 @@ public class MemberService {
         // 전체 푼 문제 체크
         Integer allTimeSolved = 0;
 
-        return new ResponseEntity<>(new MemberInfoResponse(member.getName(), todaySolved, allTimeSolved), HttpStatus.OK);
+        // 연속으로 푼 일수 체크
+        Integer streakDays = 0;
+
+        return new ResponseEntity<>(new MemberInfoResponse(member.getName(), todaySolved, allTimeSolved, streakDays), HttpStatus.OK);
     }
 }
