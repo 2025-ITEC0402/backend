@@ -4,10 +4,12 @@ import com.ema.ema_backend.domain.type.ChapterType;
 import com.ema.ema_backend.domain.type.LearningLevelType;
 import com.ema.ema_backend.global.BaseEntityWithUpdatedAt;
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@Getter
 public class LearningHistory extends BaseEntityWithUpdatedAt {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "learning_history_id")
