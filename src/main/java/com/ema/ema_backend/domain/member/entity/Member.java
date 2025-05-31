@@ -32,10 +32,10 @@ public class Member extends BaseEntityWithUpdatedAt {
     @JoinColumn(name = "learning_history_id")
     private LearningHistory learningHistory;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<MemberQuestion> memberQuestions = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<ChatRoom> chatRooms = new ArrayList<>();
 
     @Builder
