@@ -6,10 +6,7 @@ import com.ema.ema_backend.global.BaseEntityWithUpdatedAt;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +27,7 @@ public class Member extends BaseEntityWithUpdatedAt {
     @Email
     private String email;
 
+    @Setter
     @OneToOne
     @JoinColumn(name = "learning_history_id")
     private LearningHistory learningHistory;

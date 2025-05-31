@@ -86,4 +86,24 @@ public class MemberService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    public ResponseEntity<Void> updateLearningHistory(Authentication authentication){
+        Optional<Member> optionalMember = checkPermission(authentication);
+        if (optionalMember.isEmpty()) {
+            throw new MemberNotFoundException("Member Not Found");
+        }
+        Member member = optionalMember.get();
+
+        // RestTemplate 으로 LLM 호출 후 학습 이력 갱신하기
+
+
+        // 결과 json 파싱
+
+        String chapter1 = "3";
+        String chapter2 = "6";
+        String chapter3 = "7";
+        String goal = "변경된 목표입니다.";
+
+        member.getLearningHistory().update(chapter1, chapter2, chapter3, goal, member);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

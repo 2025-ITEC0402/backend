@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,5 +34,10 @@ public class MemberController {
     @GetMapping("/streak")
     public ResponseEntity<StreakInfoResponse> getStreakInfo(Authentication authentication) {
         return memberService.getStreakInfo(authentication);
+    }
+
+    @PutMapping("/learning-history")
+    public ResponseEntity<Void> updateLearningHistory(Authentication authentication) {
+        return memberService.updateLearningHistory(authentication);
     }
 }

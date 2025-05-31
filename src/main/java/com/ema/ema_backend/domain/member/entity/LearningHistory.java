@@ -37,4 +37,12 @@ public class LearningHistory extends BaseEntityWithUpdatedAt {
         this.recommendedChapter3 = ChapterType.INITIAL;
         this.learningLevel = LearningLevelType.INITIAL;
     }
+
+    public void update(String chapter1, String chapter2, String chapter3, String goal, Member member) {
+        this.recommendedChapter1 = ChapterType.fromStringNumber(chapter1);
+        this.recommendedChapter2 = ChapterType.fromStringNumber(chapter2);
+        this.recommendedChapter3 = ChapterType.fromStringNumber(chapter3);
+        this.goal = goal;
+        this.member = member;
+    }
 }
