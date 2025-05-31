@@ -36,4 +36,11 @@ public class GlobalExceptionHandler {
         problemDetail.setTitle("MEMBER_NOT_FOUND");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
     }
+
+    @ExceptionHandler(ChapterNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleChapterNotFoundException(ChapterNotFoundException e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+        problemDetail.setTitle("CHAPTER_NOT_FOUND");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    }
 }
