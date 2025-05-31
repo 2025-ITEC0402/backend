@@ -1,10 +1,13 @@
 package com.ema.ema_backend.domain.member.service;
 
 import com.ema.ema_backend.domain.member.dto.MemberInfoResponse;
+import com.ema.ema_backend.domain.member.dto.StreakInfoResponse;
+import com.ema.ema_backend.domain.member.dto.StreakSet;
 import com.ema.ema_backend.domain.member.entity.LearningHistory;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.repository.LearningHistoryRepository;
 import com.ema.ema_backend.domain.member.repository.MemberRepository;
+import com.ema.ema_backend.global.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +15,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,6 +36,7 @@ public class MemberService {
         learningHistoryRepository.save(learningHistory);
 
         Member member = Member.createByNameAndEmail(nickname, email, learningHistory);
+        member.getLearningHistory().setMember(member);
         memberRepository.save(member);
     }
 
@@ -62,5 +69,20 @@ public class MemberService {
         Integer streakDays = 0;
 
         return new ResponseEntity<>(new MemberInfoResponse(member.getName(), todaySolved, allTimeSolved, streakDays), HttpStatus.OK);
+    }
+
+    public ResponseEntity<StreakInfoResponse> getStreakInfo(Authentication authentication) {
+        Optional<Member> optionalMember = checkPermission(authentication);
+        if (optionalMember.isEmpty()) {
+            throw new MemberNotFoundException("Member Not Found");
+        }
+
+        StreakSet s1 = new StreakSet(LocalDate.of(2025, 5, 31), 3);
+        StreakSet s2 = new StreakSet(LocalDate.of(2025, 5, 29), 2);
+        List<StreakSet> streakSets = new ArrayList<>();
+        streakSets.add(s1);
+        streakSets.add(s2);
+        StreakInfoResponse response = new StreakInfoResponse(streakSets);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

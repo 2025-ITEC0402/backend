@@ -1,6 +1,7 @@
 package com.ema.ema_backend.domain.member.controller;
 
 import com.ema.ema_backend.domain.member.dto.MemberInfoResponse;
+import com.ema.ema_backend.domain.member.dto.StreakInfoResponse;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,13 @@ public class MemberController {
         return memberService.testCheckPermission(authentication);
     }
 
-    @GetMapping()
+    @GetMapping("/info")
     public ResponseEntity<MemberInfoResponse> getMemberInfo(Authentication authentication) {
         return memberService.getMemberInfo(authentication);
+    }
+
+    @GetMapping("/streak")
+    public ResponseEntity<StreakInfoResponse> getStreakInfo(Authentication authentication) {
+        return memberService.getStreakInfo(authentication);
     }
 }
