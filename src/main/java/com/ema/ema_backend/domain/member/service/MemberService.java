@@ -40,7 +40,7 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    private Optional<Member> checkPermission(Authentication authentication){
+    public Optional<Member> checkPermission(Authentication authentication){
         return memberRepository.findByEmail(authentication.getName());
     }
 
@@ -85,4 +85,5 @@ public class MemberService {
         StreakInfoResponse response = new StreakInfoResponse(streakSets);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 }
