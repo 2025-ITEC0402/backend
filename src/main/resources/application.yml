@@ -2,8 +2,8 @@ spring:
   application:
     name: ema-backend
 
-  profiles:
-    include: secret
+#  profiles:
+#    include: secret
 
   config:
     import: optional:file:dev.env[.properties]
@@ -25,7 +25,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
