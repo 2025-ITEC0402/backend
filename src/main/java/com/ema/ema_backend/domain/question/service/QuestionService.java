@@ -5,14 +5,12 @@ import com.ema.ema_backend.domain.member.service.MemberService;
 import com.ema.ema_backend.domain.memberquestion.MemberQuestion;
 import com.ema.ema_backend.domain.memberquestion.service.MemberQuestionService;
 import com.ema.ema_backend.domain.question.Question;
-import com.ema.ema_backend.domain.question.dto.QuestionSet;
-import com.ema.ema_backend.domain.question.dto.QuestionsInfoResponse;
-import com.ema.ema_backend.domain.question.dto.RecommendSet;
-import com.ema.ema_backend.domain.question.dto.RecommendedQuestionInfoResponse;
+import com.ema.ema_backend.domain.question.dto.*;
 import com.ema.ema_backend.domain.question.repository.QuestionRepository;
 import com.ema.ema_backend.domain.type.ChapterType;
 import com.ema.ema_backend.domain.type.DifficultyType;
 import com.ema.ema_backend.global.exception.MemberNotFoundException;
+import com.ema.ema_backend.global.exception.QuestionNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,15 +39,32 @@ public class QuestionService {
         List<RecommendSet> recommendSets = new ArrayList<>();
 
         ChapterType chapterType1 = member.getLearningHistory().getRecommendedChapter1();
-        RecommendSet qs1 = new RecommendSet(chapterType1.getChapterName(), chapterType1.toString(), "EASY");
+        System.out.println(chapterType1.toString());
+        Optional<Question> optionalQuestion = questionRepository.findByChapterName(member.getId(), chapterType1.toString());
+        if (optionalQuestion.isEmpty()) {
+            throw new QuestionNotFoundException("Question not found at QuestionService - getRecommendQuestion()");
+        }
+        Question question = optionalQuestion.get();
+        RecommendSet qs1 = new RecommendSet(question.getId(), chapterType1.getChapterName(), chapterType1.toString(), "EASY");
         recommendSets.add(qs1);
 
+
         ChapterType chapterType2 = member.getLearningHistory().getRecommendedChapter2();
-        RecommendSet qs2 = new RecommendSet(chapterType2.getChapterName(), chapterType2.toString(), "NORMAL");
+        optionalQuestion = questionRepository.findByChapterName(member.getId(), chapterType2.toString());
+        if (optionalQuestion.isEmpty()) {
+            throw new QuestionNotFoundException("Question not found at QuestionService - getRecommendQuestion()");
+        }
+        question = optionalQuestion.get();
+        RecommendSet qs2 = new RecommendSet(question.getId(), chapterType2.getChapterName(), chapterType2.toString(), "NORMAL");
         recommendSets.add(qs2);
 
         ChapterType chapterType3 = member.getLearningHistory().getRecommendedChapter3();
-        RecommendSet qs3 = new RecommendSet(chapterType3.getChapterName(), chapterType3.toString(), "HARD");
+        optionalQuestion = questionRepository.findByChapterName(member.getId(), chapterType3.toString());
+        if (optionalQuestion.isEmpty()) {
+            throw new QuestionNotFoundException("Question not found at QuestionService - getRecommendQuestion()");
+        }
+        question = optionalQuestion.get();
+        RecommendSet qs3 = new RecommendSet(question.getId(), chapterType3.getChapterName(), chapterType3.toString(), "HARD");
         recommendSets.add(qs3);
 
         RecommendedQuestionInfoResponse response = new RecommendedQuestionInfoResponse(recommendSets);
@@ -69,7 +84,6 @@ public class QuestionService {
         List<QuestionSet> questions = new ArrayList<>();
 
         for (Question q : questionList) {
-            memberQuestionService.createMemberQuestion(member, q);
             questions.add(
                     new QuestionSet(
                             q.getId(),
@@ -80,6 +94,7 @@ public class QuestionService {
                             q.getChoice4(),
                             q.getAnswer(),
                             q.getExplanation(),
+                            q.getAiSummary(),
                             q.getDifficulty().toString(),
                             q.getChapter().toString()));
         }
@@ -144,7 +159,6 @@ public class QuestionService {
 
         questionRepository.save(question);
 
-        memberQuestionService.createMemberQuestion(member, question);
         return new ResponseEntity<>(
                 new QuestionSet(
                         question.getId(),
@@ -155,10 +169,61 @@ public class QuestionService {
                         question.getChoice4(),
                         question.getAnswer(),
                         question.getExplanation(),
+                        question.getAiSummary(),
                         question.getDifficulty().toString(),
                         question.getChapter().toString()
                 ),
                 HttpStatus.OK
         );
+    }
+
+    @Transactional
+    public ResponseEntity<QuestionSet> getQuestionById(Long id, Authentication authentication) {
+        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        if (optionalMember.isEmpty()) {
+            throw new MemberNotFoundException("Member not found at QuestionService - getQuestionById()");
+        }
+        Member member = optionalMember.get();
+
+        Optional<Question> optionalQuestion = questionRepository.findById(id);
+        if (optionalQuestion.isEmpty()) {
+            throw new QuestionNotFoundException("Question not found at QuestionService - getQuestionById()");
+        }
+        Question question = optionalQuestion.get();
+
+        return new ResponseEntity<>(
+                new QuestionSet(
+                        question.getId(),
+                        question.getTitle(),
+                        question.getChoice1(),
+                        question.getChoice2(),
+                        question.getChoice3(),
+                        question.getChoice4(),
+                        question.getAnswer(),
+                        question.getExplanation(),
+                        question.getAiSummary(),
+                        question.getDifficulty().toString(),
+                        question.getChapter().toString()
+                ),
+                HttpStatus.OK
+        );
+    }
+
+    @Transactional
+    public ResponseEntity<Void> checkAnswer(Long id, CheckAnswerRequest req, Authentication authentication) {
+        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        if (optionalMember.isEmpty()) {
+            throw new MemberNotFoundException("Member not found at QuestionService - getQuestionById()");
+        }
+        Member member = optionalMember.get();
+
+        Optional<Question> optionalQuestion = questionRepository.findById(id);
+        if (optionalQuestion.isEmpty()) {
+            throw new QuestionNotFoundException("Question not found at QuestionService - getQuestionById()");
+        }
+        Question question = optionalQuestion.get();
+
+        memberQuestionService.createMemberQuestion(member, question, Boolean.valueOf(req.correctOnFirstTry()));
+        return ResponseEntity.ok().build();
     }
 }

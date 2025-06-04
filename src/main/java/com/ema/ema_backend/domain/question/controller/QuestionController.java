@@ -1,5 +1,6 @@
 package com.ema.ema_backend.domain.question.controller;
 
+import com.ema.ema_backend.domain.question.dto.CheckAnswerRequest;
 import com.ema.ema_backend.domain.question.dto.QuestionSet;
 import com.ema.ema_backend.domain.question.dto.QuestionsInfoResponse;
 import com.ema.ema_backend.domain.question.dto.RecommendedQuestionInfoResponse;
@@ -110,5 +111,15 @@ public class QuestionController {
     @PostMapping("/generate")
     public ResponseEntity<QuestionSet> generatePersonalizedQuestion(Authentication authentication) {
         return questionService.generatePersonalizedQuestion(authentication);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<QuestionSet> getQuestionById(@PathVariable("id") Long id, Authentication authentication) {
+        return questionService.getQuestionById(id, authentication);
+    }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<Void> checkAnswer(@PathVariable("id") Long id, @RequestBody CheckAnswerRequest req, Authentication authentication) {
+        return questionService.checkAnswer(id, req, authentication);
     }
 }
