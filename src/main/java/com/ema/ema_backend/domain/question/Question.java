@@ -30,6 +30,7 @@ public class Question extends BaseEntity {
     private String answer;
 
     private String explanation;
+    private String aiSummary;
 
     @Enumerated(EnumType.STRING)
     private DifficultyType difficulty;
@@ -48,6 +49,7 @@ public class Question extends BaseEntity {
                     String choice4,
                     String answer,
                     String explanation,
+                    String aiSummary,
                     DifficultyType difficultyType,
                     ChapterType chapterType) {
         this.title = title;
@@ -57,6 +59,7 @@ public class Question extends BaseEntity {
         this.choice4 = choice4;
         this.answer = answer;
         this.explanation = explanation;
+        this.aiSummary = aiSummary;
         this.difficulty = difficultyType;
         this.chapter = chapterType;
     }

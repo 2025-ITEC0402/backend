@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 public class MemberQuestionService {
     private final MemberQuestionRepository memberQuestionRepository;
 
-    public void createMemberQuestion(Member member, Question question) {
-        MemberQuestion memberQuestion = memberQuestionRepository.save(new MemberQuestion(member, question));
+    public void createMemberQuestion(Member member, Question question, Boolean correctOnFirstTry) {
+        MemberQuestion memberQuestion = memberQuestionRepository.save(new MemberQuestion(member, question, correctOnFirstTry));
         member.getMemberQuestions().add(memberQuestion);
         question.getQuestionList().add(memberQuestion);
     }

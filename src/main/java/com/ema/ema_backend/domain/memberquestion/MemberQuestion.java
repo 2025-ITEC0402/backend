@@ -19,6 +19,8 @@ public class MemberQuestion extends BaseEntityWithUpdatedAt {
 
     private LocalDateTime solvedAt;
 
+    private Boolean correctOnFirstTry;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -27,9 +29,10 @@ public class MemberQuestion extends BaseEntityWithUpdatedAt {
     @JoinColumn(name = "question_id")
     private Question question;
 
-    public MemberQuestion(Member member, Question question) {
+    public MemberQuestion(Member member, Question question, Boolean correctOnFirstTry) {
         this.member = member;
         this.question = question;
+        this.correctOnFirstTry = correctOnFirstTry;
         this.solvedAt = LocalDateTime.now();
     }
 
