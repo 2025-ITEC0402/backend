@@ -43,4 +43,11 @@ public class GlobalExceptionHandler {
         problemDetail.setTitle("CHAPTER_NOT_FOUND");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
     }
+
+    @ExceptionHandler(QuestionNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleQuestionNotFoundException(QuestionNotFoundException e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+        problemDetail.setTitle("QUESTION_NOT_FOUND");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    }
 }
