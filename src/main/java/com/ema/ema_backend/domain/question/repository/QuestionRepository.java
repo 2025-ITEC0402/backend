@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     @Query(
@@ -23,4 +24,19 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     )
     List<Question> find3RandomQuestionsNotSolvedByMember(@Param("memberId") Long memberId);
 
+    @Query(
+            value = """
+            SELECT * FROM question q
+            WHERE q.id NOT IN (
+                SELECT mq.question_id
+                FROM member_question mq
+                WHERE mq.member_id = :memberId
+            ) AND q.chapter = :chapter
+            ORDER BY RAND()
+            LIMIT 1
+        """,
+            nativeQuery = true
+    )
+    Optional<Question> findByChapterName(@Param("memberId") Long memberId, @Param("chapter") String chapter);
+    Optional<Question> findById(Long id);
 }
