@@ -126,7 +126,7 @@ public class QuestionService {
         String choice4 = "7";
         String answer = "3";
         String explanation = "왼손 손가락 3개를 펴고, 오른손 손가락 3개를 펴세요. 왼손부터 차례대로 세면 총 6개입니다. 따라서 답은 6입니다.";
-        DifficultyType difficultyType = DifficultyType.VERY_EASY;
+        DifficultyType difficultyType = DifficultyType.EASY;
         ChapterType chapterType = ChapterType.CHAPTER_4;
 
         // Member와 매핑 (MemberQuestion에도 추가)
