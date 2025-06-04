@@ -9,6 +9,7 @@ public record QuestionSet(
         String choice4,
         String answer,
         String explanation,
+        String aiSummary,
         String difficulty,
         String chapter
         ) {
