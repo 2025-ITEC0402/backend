@@ -111,6 +111,10 @@ public class ChatRoomService {
             throw new UnauthorizedAccessException("ChatRoom", "at ChatRoomService - postChat()");
         }
 
+        Message userMessage = new Message("사용자", req.content(), chatRoom);
+        messageRepository.save(userMessage);
+        chatRoom.getMessages().add(userMessage);
+
         // RestTemplate 통해 파이썬 서버 연결
         PyPostChatResponse response = postChat(new PyPostChatRequest(req.content()));
 
