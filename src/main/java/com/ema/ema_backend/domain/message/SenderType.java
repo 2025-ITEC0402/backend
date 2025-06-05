@@ -1,5 +1,8 @@
 package com.ema.ema_backend.domain.message;
 
+import lombok.Getter;
+
+@Getter
 public enum SenderType {
     USER("사용자"), SERVER("서버"), INVALID("잘못된 값");
 
