@@ -7,7 +7,7 @@ import com.ema.ema_backend.domain.member.entity.LearningHistory;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.repository.LearningHistoryRepository;
 import com.ema.ema_backend.domain.member.repository.MemberRepository;
-import com.ema.ema_backend.global.exception.MemberNotFoundException;
+import com.ema.ema_backend.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -74,7 +74,7 @@ public class MemberService {
     public ResponseEntity<StreakInfoResponse> getStreakInfo(Authentication authentication) {
         Optional<Member> optionalMember = checkPermission(authentication);
         if (optionalMember.isEmpty()) {
-            throw new MemberNotFoundException("Member Not Found");
+            throw new NotFoundException("Member", " ");
         }
 
         StreakSet s1 = new StreakSet(LocalDate.of(2025, 5, 31), 3);
@@ -89,7 +89,7 @@ public class MemberService {
     public ResponseEntity<Void> updateLearningHistory(Authentication authentication){
         Optional<Member> optionalMember = checkPermission(authentication);
         if (optionalMember.isEmpty()) {
-            throw new MemberNotFoundException("Member Not Found");
+            throw new NotFoundException("Member", " ");
         }
         Member member = optionalMember.get();
 

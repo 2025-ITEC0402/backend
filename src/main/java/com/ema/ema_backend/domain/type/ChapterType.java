@@ -1,6 +1,6 @@
 package com.ema.ema_backend.domain.type;
 
-import com.ema.ema_backend.global.exception.ChapterNotFoundException;
+import com.ema.ema_backend.global.exception.NotFoundException;
 import lombok.Getter;
 
 @Getter
@@ -44,7 +44,7 @@ public enum ChapterType {
         try {
             return ChapterType.valueOf("CHAPTER_" + number);
         } catch (IllegalArgumentException e) {
-            throw new ChapterNotFoundException("해당하는 챕터가 없습니다: " + number);
+            throw new NotFoundException("Chapter", "해당하는 챕터가 없습니다: " + number);
         }
     }
 }

@@ -113,11 +113,81 @@ public class QuestionController {
         return questionService.generatePersonalizedQuestion(authentication);
     }
 
+    @Operation(
+            summary = "id로 문제 조회",
+            description = "인증된 사용자가 id에 해당하는 문제를 조회합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "문제 조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = QuestionSet.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "인증되지 않음(유효한 JWT 토큰 필요)",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "권한 없음(해당 문제를 조회할 권한이 없음)",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "해당 ID의 문제를 찾을 수 없음",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "서버 내부 오류",
+                            content = @Content
+                    )
+            }
+    )
     @GetMapping("/{id}")
     public ResponseEntity<QuestionSet> getQuestionById(@PathVariable("id") Long id, Authentication authentication) {
         return questionService.getQuestionById(id, authentication);
     }
 
+    @Operation(
+            summary = "정답 확인",
+            description = "인증된 사용자가 특정 문제에 대해 사용자의 정답 여부를 서버로 전송하여 기록합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "정답 여부 전송 완료(결과 없음)",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "잘못된 요청(유효하지 않은 파라미터 등)",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "인증되지 않음(유효한 JWT 토큰 필요)",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "권한 없음(해당 문제를 확인할 권한이 없음)",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "해당 ID의 문제를 찾을 수 없음",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "서버 내부 오류",
+                            content = @Content
+                    )
+            }
+    )
     @PostMapping("/{id}")
     public ResponseEntity<Void> checkAnswer(@PathVariable("id") Long id, @RequestBody CheckAnswerRequest req, Authentication authentication) {
         return questionService.checkAnswer(id, req, authentication);

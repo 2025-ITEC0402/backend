@@ -30,24 +30,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
     }
 
-    @ExceptionHandler(MemberNotFoundException.class)
-    public ResponseEntity<ProblemDetail> handleMemberNotFoundException(MemberNotFoundException e) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleNotFoundException(NotFoundException e) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
-        problemDetail.setTitle("MEMBER_NOT_FOUND");
+        problemDetail.setTitle("NOT_FOUND");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
     }
 
-    @ExceptionHandler(ChapterNotFoundException.class)
-    public ResponseEntity<ProblemDetail> handleChapterNotFoundException(ChapterNotFoundException e) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
-        problemDetail.setTitle("CHAPTER_NOT_FOUND");
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    @ExceptionHandler(RemoteApiException.class)
+    public ResponseEntity<ProblemDetail> handleRemoteApiException(RemoteApiException e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        problemDetail.setTitle("INTERNAL_SERVER_ERROR");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
     }
 
-    @ExceptionHandler(QuestionNotFoundException.class)
-    public ResponseEntity<ProblemDetail> handleQuestionNotFoundException(QuestionNotFoundException e) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
-        problemDetail.setTitle("QUESTION_NOT_FOUND");
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ProblemDetail> handleUnauthorizedAccessException(UnauthorizedAccessException e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
+        problemDetail.setTitle("UNAUTHORIZED");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
     }
 }
