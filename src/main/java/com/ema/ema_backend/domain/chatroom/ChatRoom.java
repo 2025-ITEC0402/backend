@@ -30,7 +30,11 @@ public class ChatRoom extends BaseEntityWithUpdatedAt {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "chatRoom")
+    @OneToMany(
+            mappedBy = "chatRoom",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<Message> messages = new ArrayList<>();
 
     public ChatRoom(String roomTitle, Member member) {

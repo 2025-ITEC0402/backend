@@ -197,4 +197,33 @@ public class ChatRoomService {
         chatRoom.setRoomTitle(req.newTitle());
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @Transactional
+    public ResponseEntity<Void> deleteChatRoom(Long chatRoomId, Authentication authentication){
+        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        if (optionalMember.isEmpty()){
+            throw new NotFoundException("Member", "at ChatRoomService - deleteChatRoom()");
+        }
+        Member member = optionalMember.get();
+
+        Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findById(chatRoomId);
+        if (optionalChatRoom.isEmpty()){
+            throw new NotFoundException("ChatRoom", "at ChatRoomService - deleteChatRoom()");
+        }
+        ChatRoom chatRoom = optionalChatRoom.get();
+
+        if (!chatRoom.getMember().equals(member)){
+            throw new UnauthorizedAccessException("ChatRoom", "at ChatRoomService - deleteChatRoom()");
+        }
+
+        // 채팅방에 있는 message 모두 삭제
+        // @OneToMany(
+        //        mappedBy = "chatRoom",
+        //        cascade = CascadeType.ALL,
+        //        orphanRemoval = true
+        //    )
+        // 태그로 인해 message 들 자동으로 삭제됨.
+        chatRoomRepository.deleteById(chatRoomId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
