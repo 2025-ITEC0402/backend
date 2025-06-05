@@ -31,7 +31,6 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final MemberService memberService;
     private final MessageService messageService;
-    private final MessageRepository messageRepository;
     private final RestTemplate restTemplate;
 
     @Value("${PY_SERVER_BASE_URI}")
@@ -49,15 +48,13 @@ public class ChatRoomService {
         ChatRoom chatRoom = new ChatRoom("Initial Chat", member);
         chatRoomRepository.save(chatRoom);
 
-        Message userMessage = new Message("사용자", req.content(), chatRoom);
-        messageRepository.save(userMessage);
+        Message userMessage = messageService.createMessage("사용자", req.content(), chatRoom);
         chatRoom.getMessages().add(userMessage);
 
         // RestTemplate 통해 파이썬 서버 연결
         PyPostChatFirstResponse response = postFirstChat(new PyPostChatRequest(req.content()));
 
-        Message aiMessage = new Message("서버", response.answer(), chatRoom);
-        messageRepository.save(aiMessage);
+        Message aiMessage = messageService.createMessage("서버", response.answer(), chatRoom);
         chatRoom.getMessages().add(aiMessage);
 
         chatRoom.setRoomTitle(response.title());
@@ -111,15 +108,13 @@ public class ChatRoomService {
             throw new UnauthorizedAccessException("ChatRoom", "at ChatRoomService - postChat()");
         }
 
-        Message userMessage = new Message("사용자", req.content(), chatRoom);
-        messageRepository.save(userMessage);
+        Message userMessage = messageService.createMessage("사용자", req.content(), chatRoom);
         chatRoom.getMessages().add(userMessage);
 
         // RestTemplate 통해 파이썬 서버 연결
         PyPostChatResponse response = postChat(new PyPostChatRequest(req.content()));
 
-        Message aiMessage = new Message("서버", response.answer(), chatRoom);
-        messageRepository.save(aiMessage);
+        Message aiMessage = messageService.createMessage("서버", response.answer(), chatRoom);
         chatRoom.getMessages().add(aiMessage);
 
         // FirstChatResponse 데이터 조립
