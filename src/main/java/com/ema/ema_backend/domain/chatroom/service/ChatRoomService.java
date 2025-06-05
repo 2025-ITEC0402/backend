@@ -1,16 +1,13 @@
 package com.ema.ema_backend.domain.chatroom.service;
 
 import com.ema.ema_backend.domain.chatroom.ChatRoom;
-import com.ema.ema_backend.domain.chatroom.dto.FirstChatRequest;
-import com.ema.ema_backend.domain.chatroom.dto.FirstChatResponse;
-import com.ema.ema_backend.domain.chatroom.dto.PyPostNewChatFirstResponse;
-import com.ema.ema_backend.domain.chatroom.dto.PyPostNewChatRequest;
+import com.ema.ema_backend.domain.chatroom.dto.*;
 import com.ema.ema_backend.domain.chatroom.repository.ChatRoomRepository;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.service.MemberService;
 import com.ema.ema_backend.domain.message.Message;
 import com.ema.ema_backend.domain.message.repository.MessageRepository;
-import com.ema.ema_backend.global.exception.MemberNotFoundException;
+import com.ema.ema_backend.global.exception.NotFoundException;
 import com.ema.ema_backend.global.exception.RemoteApiException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +31,10 @@ public class ChatRoomService {
     private String baseUri;
 
     @Transactional
-    public ResponseEntity<FirstChatResponse> postNewChat(FirstChatRequest req, Authentication authentication){
+    public ResponseEntity<FirstChatResponse> postNewChat(ChatRequest req, Authentication authentication){
         Optional<Member> optionalMember = memberService.checkPermission(authentication);
         if(optionalMember.isEmpty()){
-            throw new MemberNotFoundException("Member not found at ChatRoomService - postNewChat()");
+            throw new NotFoundException("Member", "at ChatRoomService - postNewChat()");
         }
         Member member = optionalMember.get();
 
@@ -86,5 +83,20 @@ public class ChatRoomService {
             // 오류 응답 처리 (예외 던지기 등)
             throw new RemoteApiException("원격 서버 응답 실패: HTTP " + responseEntity.getStatusCode() + "," + baseUri + "/quantitle");
         }
+    }
+
+    @Transactional
+    public ResponseEntity<ChatResponse> postChat(Long ChatRoomId, ChatRequest req, Authentication authentication){
+        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        if (optionalMember.isEmpty()){
+            throw new NotFoundException("Member", "at ChatRoomService - postChat()");
+        }
+        Member member = optionalMember.get();
+
+        Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findById(ChatRoomId);
+        if (optionalChatRoom.isEmpty()){
+
+        }
+
     }
 }
