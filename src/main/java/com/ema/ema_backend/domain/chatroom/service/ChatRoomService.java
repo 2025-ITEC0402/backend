@@ -181,4 +181,25 @@ public class ChatRoomService {
                                 .map(Message::getId)
                                 .collect(Collectors.toList()))), HttpStatus.OK);
     }
+
+    @Transactional
+    public ResponseEntity<Void> updateChatRoomTitle(Long chatRoomId, TitleUpdateRequest req, Authentication authentication){
+        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        if (optionalMember.isEmpty()){
+            throw new NotFoundException("Member", "at ChatRoomService - updateChatRoomTitle()");
+        }
+        Member member = optionalMember.get();
+
+        Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findById(chatRoomId);
+        if (optionalChatRoom.isEmpty()){
+            throw new NotFoundException("ChatRoom", "at ChatRoomService - updateChatRoomTitle()");
+        }
+        ChatRoom chatRoom = optionalChatRoom.get();
+
+        if (!chatRoom.getMember().equals(member)){
+            throw new UnauthorizedAccessException("ChatRoom", "at ChatRoomService - updateChatRoomTitle()");
+        }
+        chatRoom.setRoomTitle(req.newTitle());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

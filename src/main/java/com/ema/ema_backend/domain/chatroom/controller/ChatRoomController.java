@@ -1,9 +1,6 @@
 package com.ema.ema_backend.domain.chatroom.controller;
 
-import com.ema.ema_backend.domain.chatroom.dto.ChatRequest;
-import com.ema.ema_backend.domain.chatroom.dto.ChatResponse;
-import com.ema.ema_backend.domain.chatroom.dto.ChatRoomResponse;
-import com.ema.ema_backend.domain.chatroom.dto.FirstChatResponse;
+import com.ema.ema_backend.domain.chatroom.dto.*;
 import com.ema.ema_backend.domain.chatroom.service.ChatRoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -131,6 +128,44 @@ public class ChatRoomController {
     public ResponseEntity<ChatRoomResponse> getChatRoom(@PathVariable Long chatRoomId, Authentication authentication){
         return chatRoomService.getChatRoom(chatRoomId, authentication);
     }
-
-
+    @Operation(
+            summary = "채팅방 제목 수정",
+            description = "인증된 사용자가 특정 채팅방의 제목을 수정합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "채팅방 제목 수정 성공",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "잘못된 요청(유효하지 않은 파라미터 등)",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "인증되지 않음(유효한 JWT 토큰 필요)",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "권한 없음(해당 채팅방의 제목을 수정할 권한이 없음)",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "해당 ID의 채팅방을 찾을 수 없음",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "서버 내부 오류",
+                            content = @Content
+                    )
+            }
+    )
+    @PutMapping("/{chatRoomId}")
+    public ResponseEntity<Void> updateChatRoomTitle(@PathVariable Long chatRoomId, @RequestBody TitleUpdateRequest req, Authentication authentication){
+        return chatRoomService.updateChatRoomTitle(chatRoomId, req, authentication);
+    }
 }
