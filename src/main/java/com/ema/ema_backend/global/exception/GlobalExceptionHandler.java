@@ -50,4 +50,11 @@ public class GlobalExceptionHandler {
         problemDetail.setTitle("QUESTION_NOT_FOUND");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
     }
+
+    @ExceptionHandler(RemoteApiException.class)
+    public ResponseEntity<ProblemDetail> handleRemoteApiException(RemoteApiException e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        problemDetail.setTitle("INTERNAL_SERVER_ERROR");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
+    }
 }
