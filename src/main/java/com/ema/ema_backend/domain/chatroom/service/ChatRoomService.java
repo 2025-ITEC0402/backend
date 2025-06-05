@@ -9,6 +9,7 @@ import com.ema.ema_backend.domain.message.Message;
 import com.ema.ema_backend.domain.message.repository.MessageRepository;
 import com.ema.ema_backend.global.exception.NotFoundException;
 import com.ema.ema_backend.global.exception.RemoteApiException;
+import com.ema.ema_backend.global.exception.UnauthorizedAccessException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,7 +48,7 @@ public class ChatRoomService {
         chatRoom.getMessages().add(userMessage);
 
         // RestTemplate 통해 파이썬 서버 연결
-        PyPostNewChatFirstResponse response = postFirstChat(new PyPostNewChatRequest(req.content()));
+        PyPostChatFirstResponse response = postFirstChat(new PyPostChatRequest(req.content()));
 
         Message aiMessage = new Message("서버", response.answer(), chatRoom);
         messageRepository.save(aiMessage);
@@ -61,18 +62,18 @@ public class ChatRoomService {
 
 
     @Transactional
-    public PyPostNewChatFirstResponse postFirstChat(PyPostNewChatRequest req){
+    public PyPostChatFirstResponse postFirstChat(PyPostChatRequest req){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         // HttpEntity에 바디와 헤더 담기
-        HttpEntity<PyPostNewChatRequest> httpEntity = new HttpEntity<>(req, headers);
+        HttpEntity<PyPostChatRequest> httpEntity = new HttpEntity<>(req, headers);
 
         // RestTemplate으로 POST 요청 보내기
-        ResponseEntity<PyPostNewChatFirstResponse> responseEntity = restTemplate.postForEntity(
+        ResponseEntity<PyPostChatFirstResponse> responseEntity = restTemplate.postForEntity(
                 baseUri + "/qnantitle",
                 httpEntity,
-                PyPostNewChatFirstResponse.class
+                PyPostChatFirstResponse.class
         );
 
         // HTTP 상태 코드 체크 (200 OK 등)
@@ -95,8 +96,48 @@ public class ChatRoomService {
 
         Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findById(ChatRoomId);
         if (optionalChatRoom.isEmpty()){
+            throw new NotFoundException("ChatRoom", "at ChatRoomService - postChat()");
+        }
+        ChatRoom chatRoom = optionalChatRoom.get();
 
+        // 유저의 chatroom이 맞는지 검증
+        if (!chatRoom.getMember().equals(member)){
+            throw new UnauthorizedAccessException("ChatRoom", "at ChatRoomService - postChat()");
         }
 
+        // RestTemplate 통해 파이썬 서버 연결
+        PyPostChatResponse response = postChat(new PyPostChatRequest(req.content()));
+
+        Message aiMessage = new Message("서버", response.answer(), chatRoom);
+        messageRepository.save(aiMessage);
+        chatRoom.getMessages().add(aiMessage);
+
+        // FirstChatResponse 데이터 조립
+        return new ResponseEntity<>(new ChatResponse(chatRoom.getId(), "서버", response.answer(), aiMessage.getCreatedAt()), HttpStatus.OK);
+    }
+
+    @Transactional
+    public PyPostChatResponse postChat(PyPostChatRequest req){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // HttpEntity에 바디와 헤더 담기
+        HttpEntity<PyPostChatRequest> httpEntity = new HttpEntity<>(req, headers);
+
+        // RestTemplate으로 POST 요청 보내기
+        ResponseEntity<PyPostChatResponse> responseEntity = restTemplate.postForEntity(
+                baseUri + "/qna",
+                httpEntity,
+                PyPostChatResponse.class
+        );
+
+        // HTTP 상태 코드 체크 (200 OK 등)
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            // 8) 바디에 담긴 QuestionResponse 객체 꺼내기
+            return responseEntity.getBody();
+        } else {
+            // 오류 응답 처리 (예외 던지기 등)
+            throw new RemoteApiException("원격 서버 응답 실패: HTTP " + responseEntity.getStatusCode() + "," + baseUri + "/qua");
+        }
     }
 }
