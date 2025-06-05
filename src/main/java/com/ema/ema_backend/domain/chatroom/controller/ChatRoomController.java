@@ -128,6 +128,7 @@ public class ChatRoomController {
     public ResponseEntity<ChatRoomResponse> getChatRoom(@PathVariable Long chatRoomId, Authentication authentication){
         return chatRoomService.getChatRoom(chatRoomId, authentication);
     }
+
     @Operation(
             summary = "채팅방 제목 수정",
             description = "인증된 사용자가 특정 채팅방의 제목을 수정합니다.",
@@ -203,5 +204,31 @@ public class ChatRoomController {
     @DeleteMapping("/{chatRoomId}")
     public ResponseEntity<Void> deleteChatRoom(@PathVariable Long chatRoomId, Authentication authentication){
         return chatRoomService.deleteChatRoom(chatRoomId, authentication);
+    }
+
+    @Operation(
+            summary = "모든 채팅방 정보 조회",
+            description = "인증된 사용자가 참여 중인 모든 채팅방의 정보를 조회합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "채팅방 정보 조회 성공",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "인증되지 않음(유효한 JWT 토큰 필요)",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "서버 내부 오류",
+                            content = @Content
+                    )
+            }
+    )
+    @GetMapping
+    public ResponseEntity<ChatRoomInfoResponse> getChatRoomInfos(Authentication authentication){
+        return chatRoomService.getChatRoomInfos(authentication);
     }
 }

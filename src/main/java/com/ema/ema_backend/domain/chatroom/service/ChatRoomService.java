@@ -226,4 +226,20 @@ public class ChatRoomService {
         chatRoomRepository.deleteById(chatRoomId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @Transactional
+    public ResponseEntity<ChatRoomInfoResponse> getChatRoomInfos(Authentication authentication){
+        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        if (optionalMember.isEmpty()){
+            throw new NotFoundException("Member", "at ChatRoomService - getChatRoomInfos()");
+        }
+        Member member = optionalMember.get();
+
+        List<ChatRoomWithoutMessagesResponse> responseList = new ArrayList<>();
+        for (ChatRoom chatRoom : member.getChatRooms()){
+            responseList.add(new ChatRoomWithoutMessagesResponse(chatRoom.getId(), chatRoom.getRoomTitle()));
+        }
+
+        return new ResponseEntity<>(new ChatRoomInfoResponse(responseList), HttpStatus.OK);
+    }
 }
