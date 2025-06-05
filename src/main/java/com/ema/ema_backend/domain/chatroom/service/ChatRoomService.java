@@ -6,7 +6,9 @@ import com.ema.ema_backend.domain.chatroom.repository.ChatRoomRepository;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.service.MemberService;
 import com.ema.ema_backend.domain.message.Message;
+import com.ema.ema_backend.domain.message.dto.MessageSet;
 import com.ema.ema_backend.domain.message.repository.MessageRepository;
+import com.ema.ema_backend.domain.message.service.MessageService;
 import com.ema.ema_backend.global.exception.NotFoundException;
 import com.ema.ema_backend.global.exception.RemoteApiException;
 import com.ema.ema_backend.global.exception.UnauthorizedAccessException;
@@ -18,13 +20,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final MemberService memberService;
+    private final MessageService messageService;
     private final MessageRepository messageRepository;
     private final RestTemplate restTemplate;
 
@@ -139,5 +145,36 @@ public class ChatRoomService {
             // 오류 응답 처리 (예외 던지기 등)
             throw new RemoteApiException("원격 서버 응답 실패: HTTP " + responseEntity.getStatusCode() + "," + baseUri + "/qua");
         }
+    }
+
+    @Transactional
+    public ResponseEntity<ChatRoomResponse> getChatRoom(Long chatRoomId, Authentication authentication){
+        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        if (optionalMember.isEmpty()){
+            throw new NotFoundException("Member", "at ChatRoomService - getChatRoom()");
+        }
+        Member member = optionalMember.get();
+
+        Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findById(chatRoomId);
+        if (optionalChatRoom.isEmpty()){
+            throw new NotFoundException("ChatRoom", "at ChatRoomService - getChatRoom()");
+        }
+        ChatRoom chatRoom = optionalChatRoom.get();
+
+        if (!chatRoom.getMember().equals(member)){
+            throw new UnauthorizedAccessException("ChatRoom", "at ChatRoomService - getChatRoom()");
+        }
+
+        if (chatRoom.getMessages().isEmpty()){
+            return new ResponseEntity<>(new ChatRoomResponse(chatRoom.getId(), chatRoom.getRoomTitle(), new ArrayList<>()), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(new ChatRoomResponse(
+                chatRoom.getId(),
+                chatRoom.getRoomTitle(),
+                messageService.getMessageSet(
+                        chatRoom.getMessages()
+                                .stream()
+                                .map(Message::getId)
+                                .collect(Collectors.toList()))), HttpStatus.OK);
     }
 }
