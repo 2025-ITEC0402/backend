@@ -54,13 +54,13 @@ public class ChatRoomService {
         // RestTemplate 통해 파이썬 서버 연결
         PyPostChatFirstResponse response = postFirstChat(new PyPostChatRequest(req.content()));
 
-        Message aiMessage = messageService.createMessage("서버", response.answer(), chatRoom);
+        Message aiMessage = messageService.createMessage("공학수학 어시스턴스", response.answer(), chatRoom);
         chatRoom.getMessages().add(aiMessage);
 
         chatRoom.setRoomTitle(response.title());
 
         // FirstChatResponse 데이터 조립
-        return new ResponseEntity<>(new FirstChatResponse(chatRoom.getId(), response.title(), "서버", response.answer(), aiMessage.getCreatedAt()), HttpStatus.OK);
+        return new ResponseEntity<>(new FirstChatResponse(chatRoom.getId(), response.title(), aiMessage.getSenderType().toString(), response.answer(), aiMessage.getCreatedAt()), HttpStatus.OK);
     }
 
 
@@ -114,11 +114,11 @@ public class ChatRoomService {
         // RestTemplate 통해 파이썬 서버 연결
         PyPostChatResponse response = postChat(new PyPostChatRequest(req.content()));
 
-        Message aiMessage = messageService.createMessage("서버", response.answer(), chatRoom);
+        Message aiMessage = messageService.createMessage("공학수학 어시스턴스", response.answer(), chatRoom);
         chatRoom.getMessages().add(aiMessage);
 
         // FirstChatResponse 데이터 조립
-        return new ResponseEntity<>(new ChatResponse(chatRoom.getId(), "서버", response.answer(), aiMessage.getCreatedAt()), HttpStatus.OK);
+        return new ResponseEntity<>(new ChatResponse(chatRoom.getId(), aiMessage.getSenderType().toString(), response.answer(), aiMessage.getCreatedAt()), HttpStatus.OK);
     }
 
     @Transactional

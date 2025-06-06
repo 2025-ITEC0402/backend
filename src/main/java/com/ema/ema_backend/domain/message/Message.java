@@ -18,7 +18,9 @@ public class Message extends BaseEntity {
     // 채팅 메세지 재조립을 위한 필드로 구상했으나 필요 없을듯
     // private int order;
 
+    @Enumerated(EnumType.STRING)
     private SenderType senderType;
+    @Lob
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
