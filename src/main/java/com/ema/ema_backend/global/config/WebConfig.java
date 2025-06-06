@@ -7,7 +7,9 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class WebConfig {
     @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
+    public RestTemplate restTemplate(RestTemplateResponseErrorHandler errorHandler) {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(errorHandler);
+        return restTemplate;
     }
 }
