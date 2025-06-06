@@ -213,7 +213,10 @@ public class ChatRoomController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "채팅방 정보 조회 성공",
-                            content = @Content
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ChatRoomInfoResponse.class)
+                            )
                     ),
                     @ApiResponse(
                             responseCode = "401",
