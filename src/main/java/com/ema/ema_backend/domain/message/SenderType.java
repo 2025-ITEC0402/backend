@@ -4,17 +4,17 @@ import lombok.Getter;
 
 @Getter
 public enum SenderType {
-    USER("사용자"), SERVER("서버"), INVALID("잘못된 값");
+    USER("사용자"), AI("공학수학 어시스턴스"), INVALID("잘못된 값");
 
-    private String value;
+    private final String korType;
 
-    SenderType(String value) {
-        this.value = value;
+    SenderType(String korType) {
+        this.korType = korType;
     }
 
     public static SenderType getSenderType(String role) {
         for (SenderType senderType : SenderType.values()) {
-            if (senderType.value.equals(role)) {
+            if (senderType.getKorType().equals(role)) {
                 return senderType;
             }
         }

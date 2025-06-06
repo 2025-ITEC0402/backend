@@ -2,6 +2,7 @@ package com.ema.ema_backend.domain.message.service;
 
 import com.ema.ema_backend.domain.chatroom.ChatRoom;
 import com.ema.ema_backend.domain.message.Message;
+import com.ema.ema_backend.domain.message.SenderType;
 import com.ema.ema_backend.domain.message.dto.MessageSet;
 import com.ema.ema_backend.domain.message.repository.MessageRepository;
 import jakarta.transaction.Transactional;
