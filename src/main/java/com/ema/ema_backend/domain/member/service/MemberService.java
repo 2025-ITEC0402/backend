@@ -7,6 +7,7 @@ import com.ema.ema_backend.domain.member.entity.LearningHistory;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.repository.LearningHistoryRepository;
 import com.ema.ema_backend.domain.member.repository.MemberRepository;
+import com.ema.ema_backend.domain.memberquestion.service.MemberQuestionService;
 import com.ema.ema_backend.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ import java.util.Optional;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final LearningHistoryRepository learningHistoryRepository;
+    private final MemberQuestionService memberQuestionService;
 
     public void registerNewMember(String nickname, String email) {
         if (memberRepository.findByEmail(email).isPresent()) {
@@ -59,16 +61,7 @@ public class MemberService {
         }
         Member member = optionalMember.get();
 
-        // 오늘 푼 문제 체크
-        Integer todaySolved = 0;
-
-        // 전체 푼 문제 체크
-        Integer allTimeSolved = 0;
-
-        // 연속으로 푼 일수 체크
-        Integer streakDays = 0;
-
-        return new ResponseEntity<>(new MemberInfoResponse(member.getName(), todaySolved, allTimeSolved, streakDays), HttpStatus.OK);
+        return new ResponseEntity<>(memberQuestionService.getMemberInfo(member), HttpStatus.OK);
     }
 
     public ResponseEntity<StreakInfoResponse> getStreakInfo(Authentication authentication) {
@@ -76,14 +69,11 @@ public class MemberService {
         if (optionalMember.isEmpty()) {
             throw new NotFoundException("Member", " ");
         }
+        Member member = optionalMember.get();
 
-        StreakSet s1 = new StreakSet(LocalDate.of(2025, 5, 31), 3);
-        StreakSet s2 = new StreakSet(LocalDate.of(2025, 5, 29), 2);
-        List<StreakSet> streakSets = new ArrayList<>();
-        streakSets.add(s1);
-        streakSets.add(s2);
-        StreakInfoResponse response = new StreakInfoResponse(streakSets);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(new StreakInfoResponse(
+             memberQuestionService.getStreakInfo(member)
+        ), HttpStatus.OK);
     }
 
     public ResponseEntity<Void> updateLearningHistory(Authentication authentication){
