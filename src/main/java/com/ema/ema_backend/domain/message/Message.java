@@ -28,7 +28,7 @@ public class Message extends BaseEntity {
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(name = "image_data_uri", columnDefinition = "LONGTEXT")
-    private String imageDataUri;
+    private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id")
@@ -47,12 +47,12 @@ public class Message extends BaseEntity {
      * MultipartFile을 Base64로 인코딩하여 Data URI 형식으로 저장
      */
     public static Message ofImage(String role,
-                                  String imageDataUri,
+                                  String imageUrl,
                                   String content,
                                   ChatRoom chatRoom) {
         Message m = new Message();
         m.senderType = SenderType.getSenderType(role);
-        m.imageDataUri = imageDataUri;
+        m.imageUrl = imageUrl;
         // 텍스트 메시지도 함께 저장할 경우
         m.content = content;
         m.chatRoom = chatRoom;

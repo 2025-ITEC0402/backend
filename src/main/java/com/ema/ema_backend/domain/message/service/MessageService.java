@@ -30,8 +30,8 @@ public class MessageService {
     }
 
     @Transactional
-    public Message createImgMessage(String role, String imageDataUri, String content, ChatRoom chatRoom){
-        Message message = Message.ofImage(role, imageDataUri, content, chatRoom);
+    public Message createImgMessage(String role, String imageUrl, String content, ChatRoom chatRoom){
+        Message message = Message.ofImage(role, imageUrl, content, chatRoom);
         return messageRepository.save(message);
     }
 }

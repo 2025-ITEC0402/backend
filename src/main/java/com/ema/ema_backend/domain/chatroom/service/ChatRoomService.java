@@ -33,6 +33,7 @@ public class ChatRoomService {
     private final MemberService memberService;
     private final MessageService messageService;
     private final RestTemplate restTemplate;
+    private final ImageUploadService imageUploadService;
 
     @Value("${PY_SERVER_BASE_URI}")
     private String baseUri;
@@ -91,7 +92,7 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public ResponseEntity<ChatResponse> postChat(Long ChatRoomId, ChatRequest req, Authentication authentication){
+    public ResponseEntity<ChatResponse> postChat(Long ChatRoomId, String req, Authentication authentication){
         Optional<Member> optionalMember = memberService.checkPermission(authentication);
         if (optionalMember.isEmpty()){
             throw new NotFoundException("Member", "at ChatRoomService - postChat()");
@@ -109,11 +110,11 @@ public class ChatRoomService {
             throw new UnauthorizedAccessException("ChatRoom", "at ChatRoomService - postChat()");
         }
 
-        Message userMessage = messageService.createTextMessage("사용자", req.content(), chatRoom);
+        Message userMessage = messageService.createTextMessage("사용자", req, chatRoom);
         chatRoom.getMessages().add(userMessage);
 
         // RestTemplate 통해 파이썬 서버 연결
-        PyPostChatResponse response = postChat(new PyPostChatRequest(req.content()));
+        PyPostChatResponse response = postChat(new PyPostChatRequest(req));
 
         Message aiMessage = messageService.createTextMessage("공학수학 어시스턴스", response.answer(), chatRoom);
         chatRoom.getMessages().add(aiMessage);
@@ -272,7 +273,8 @@ public class ChatRoomService {
             throw new RuntimeException("이미지 I/O Exception", e);
         }
 
-        Message userMessage = messageService.createImgMessage("사용자", dataUri, req, chatRoom);
+        String imageUrl = imageUploadService.uploadAndSave(ChatRoomId, file);
+        Message userMessage = messageService.createImgMessage("사용자", imageUrl, req, chatRoom);
         chatRoom.getMessages().add(userMessage);
 
         // RestTemplate 통해 파이썬 서버 연결
