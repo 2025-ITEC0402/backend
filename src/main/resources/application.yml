@@ -69,3 +69,16 @@ kakao:
 
 jwt:
   secret: ${JWT_SECRET_KEY}
+
+cloud:
+  aws:
+    region:
+      static: ap-northeast-2
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+
+app:
+  s3:
+    bucket-name: mychatimagebucket
+    base-url: https://mychatimagebucket.s3.ap-northeast-2.amazonaws.com

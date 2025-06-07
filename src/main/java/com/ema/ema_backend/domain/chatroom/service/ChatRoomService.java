@@ -33,6 +33,7 @@ public class ChatRoomService {
     private final MemberService memberService;
     private final MessageService messageService;
     private final RestTemplate restTemplate;
+    private final ImageUploadService imageUploadService;
 
     @Value("${PY_SERVER_BASE_URI}")
     private String baseUri;
@@ -272,7 +273,8 @@ public class ChatRoomService {
             throw new RuntimeException("이미지 I/O Exception", e);
         }
 
-        Message userMessage = messageService.createImgMessage("사용자", dataUri, req, chatRoom);
+        String imageUrl = imageUploadService.uploadAndSave(ChatRoomId, file);
+        Message userMessage = messageService.createImgMessage("사용자", imageUrl, req, chatRoom);
         chatRoom.getMessages().add(userMessage);
 
         // RestTemplate 통해 파이썬 서버 연결
