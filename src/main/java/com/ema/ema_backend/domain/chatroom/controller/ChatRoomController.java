@@ -3,6 +3,7 @@ package com.ema.ema_backend.domain.chatroom.controller;
 import com.ema.ema_backend.domain.chatroom.dto.*;
 import com.ema.ema_backend.domain.chatroom.service.ChatRoomService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,57 +55,104 @@ public class ChatRoomController {
         return chatRoomService.postNewChat(req, authentication);
     }
 
-    @Operation(
-            summary = "채팅방에 메시지 전송",
-            description = "인증된 사용자가 지정된 채팅방에 새로운 메시지를 전송합니다.",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "메시지 전송 성공",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ChatResponse.class)
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "잘못된 요청(유효하지 않은 파라미터 등)",
-                            content = @Content
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "인증되지 않음(유효한 JWT 토큰 필요)",
-                            content = @Content
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "해당 채팅방을 찾을 수 없음",
-                            content = @Content
-                    ),
-                    @ApiResponse(
-                            responseCode = "500",
-                            description = "서버 내부 오류",
-                            content = @Content
-                    )
-            }
-    )
-    @PostMapping("/{chatRoomId}")
-    public ResponseEntity<ChatResponse> postChat(@PathVariable Long chatRoomId, @RequestBody ChatRequest req, Authentication authentication){
-        return chatRoomService.postChat(chatRoomId, req, authentication);
-    }
+//    @Operation(
+//            summary = "채팅방에 메시지 전송",
+//            description = "인증된 사용자가 지정된 채팅방에 새로운 메시지를 전송합니다.",
+//            responses = {
+//                    @ApiResponse(
+//                            responseCode = "200",
+//                            description = "메시지 전송 성공",
+//                            content = @Content(
+//                                    mediaType = "application/json",
+//                                    schema = @Schema(implementation = ChatResponse.class)
+//                            )
+//                    ),
+//                    @ApiResponse(
+//                            responseCode = "400",
+//                            description = "잘못된 요청(유효하지 않은 파라미터 등)",
+//                            content = @Content
+//                    ),
+//                    @ApiResponse(
+//                            responseCode = "401",
+//                            description = "인증되지 않음(유효한 JWT 토큰 필요)",
+//                            content = @Content
+//                    ),
+//                    @ApiResponse(
+//                            responseCode = "404",
+//                            description = "해당 채팅방을 찾을 수 없음",
+//                            content = @Content
+//                    ),
+//                    @ApiResponse(
+//                            responseCode = "500",
+//                            description = "서버 내부 오류",
+//                            content = @Content
+//                    )
+//            }
+//    )
+//    @PostMapping("/{chatRoomId}")
+//    public ResponseEntity<ChatResponse> postChat(@PathVariable Long chatRoomId, @RequestBody ChatRequest req, Authentication authentication){
+//        return chatRoomService.postChat(chatRoomId, req, authentication);
+//    }
 
     @Operation(
-            summary = "채팅방에 이미지 메시지 전송",
-            description = "multipart/form-data 로 이미지 파일과 채팅 쿼리에 대해 질의응답합니다. img는 파일을 그대로 보내면 되고, query는 사용자 쿼리를 json없이 plain_text로 넣으면 됩니다."
+            summary = "채팅방에 이미지/텍스트 메시지 전송",
+            description = """
+    multipart/form-data 로 이미지 파일(img)과  
+    텍스트 쿼리(query)를 함께 업로드합니다.  
+    • img만 보낼 때: img 파트만 포함  
+    • query만 보낼 때: query 파트만 포함  
+    • 둘 다 보낼 때: img + query 둘 다 포함  
+    """
     )
-    @PostMapping(value = "/{chatRoomId}/img", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(
+            value    = "/{chatRoomId}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<ChatResponse> postChatImg(
             @PathVariable Long chatRoomId,
-            @RequestPart("img") MultipartFile file,
-            @RequestPart("query") String req,
-            Authentication authentication){
-        return chatRoomService.postChatImg(chatRoomId, file, req, authentication);
+
+            @Parameter(
+                    description = "이미지 파일 (선택)",
+                    required    = false,
+                    content     = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema    = @Schema(type="string", format="binary")
+                    )
+            )
+            @RequestPart(value = "img", required = false)
+            MultipartFile file,
+
+            @Parameter(
+                    description = "사용자 쿼리 텍스트 (선택)",
+                    required    = false
+            )
+            @RequestPart(value = "query", required = false)
+            String query,
+
+            @Parameter(hidden = true)
+            Authentication authentication
+    ) {
+        boolean hasImage = file != null && !file.isEmpty();
+        boolean hasText  = StringUtils.hasText(query);
+
+        if (!hasImage && !hasText) {
+            throw new RuntimeException("이미지와 텍스트중 하나는 있어야합니다.");
+        }
+
+        ChatResponse result;
+        if (hasImage && hasText) {
+            // 이미지 + 텍스트 둘 다
+            return chatRoomService.postChatImg(chatRoomId, file, query, authentication);
+        } else if (hasImage) {
+            // 이미지만
+            return chatRoomService.postChatImg(chatRoomId, file, " ", authentication);
+        } else {
+            // 텍스트만
+            return chatRoomService.postChat(chatRoomId, query, authentication);
+        }
     }
+
 
     @Operation(
             summary = "채팅방 상세 조회",
