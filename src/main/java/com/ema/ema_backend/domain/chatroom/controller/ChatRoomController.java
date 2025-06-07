@@ -94,7 +94,7 @@ public class ChatRoomController {
 
     @Operation(
             summary = "채팅방에 이미지 메시지 전송",
-            description = "multipart/form-data 로 이미지 파일과 채팅 쿼리에 대해 질의응답합니다."
+            description = "multipart/form-data 로 이미지 파일과 채팅 쿼리에 대해 질의응답합니다. img는 파일을 그대로 보내면 되고, query는 사용자 쿼리를 json없이 plain_text로 넣으면 됩니다."
     )
     @PostMapping(value = "/{chatRoomId}/img", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ChatResponse> postChatImg(
