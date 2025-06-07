@@ -7,9 +7,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/chatroom")
@@ -88,6 +90,19 @@ public class ChatRoomController {
     @PostMapping("/{chatRoomId}")
     public ResponseEntity<ChatResponse> postChat(@PathVariable Long chatRoomId, @RequestBody ChatRequest req, Authentication authentication){
         return chatRoomService.postChat(chatRoomId, req, authentication);
+    }
+
+    @Operation(
+            summary = "채팅방에 이미지 메시지 전송",
+            description = "multipart/form-data 로 이미지 파일과 채팅 쿼리에 대해 질의응답합니다."
+    )
+    @PostMapping(value = "/{chatRoomId}/img", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ChatResponse> postChatImg(
+            @PathVariable Long chatRoomId,
+            @RequestPart("img") MultipartFile file,
+            @RequestPart("query") String req,
+            Authentication authentication){
+        return chatRoomService.postChatImg(chatRoomId, file, req, authentication);
     }
 
     @Operation(
