@@ -10,7 +10,7 @@ spring:
 
   servlet:
     multipart:
-      enabled: false
+      enabled: true
     encoding:
       charset: UTF-8
       force: true
