@@ -74,11 +74,11 @@ public class MemberController {
 
     @Operation(
             summary = "(메인 페이지) 연속 학습 정보 조회",
-            description = "JWT 인증 토큰을 기반으로 현재 로그인된 회원의 연속 학습(스트릭) 정보를 조회합니다.",
+            description = "JWT 인증 토큰을 기반으로 현재 로그인된 회원의 연속 학습 정보, 푼 문제 수 정보를 조회합니다.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "스트릭 정보 조회 성공",
+                            description = "메인 페이지 상단 학습 정보 조회 성공",
                             content = @Content(
                                     mediaType = "application/json",
                                     schema = @Schema(implementation = StreakInfoResponse.class)
