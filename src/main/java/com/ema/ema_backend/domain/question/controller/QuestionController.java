@@ -109,8 +109,8 @@ public class QuestionController {
             }
     )
     @PostMapping("/generate")
-    public ResponseEntity<QuestionSet> generatePersonalizedQuestion(Authentication authentication) {
-        return questionService.generatePersonalizedQuestion(authentication);
+    public ResponseEntity<QuestionSet> generatePersonalizedQuestion(@RequestParam Integer buttonNum, Authentication authentication) {
+        return questionService.generatePersonalizedQuestion(buttonNum, authentication);
     }
 
     @Operation(

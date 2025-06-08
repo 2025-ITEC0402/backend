@@ -11,6 +11,8 @@ spring:
   servlet:
     multipart:
       enabled: true
+      max-file-size: 10MB       # 개별 파일의 최대 크기 (예: 10MB)
+      max-request-size: 10MB    # 요청 전체의 최대 크기 (파일 포함)
     encoding:
       charset: UTF-8
       force: true
@@ -25,7 +27,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -82,3 +84,8 @@ app:
   s3:
     bucket-name: mychatimagebucket
     base-url: https://mychatimagebucket.s3.ap-northeast-2.amazonaws.com
+
+gemini:
+  api:
+    key: ${GOOGLE_API_KEY}
+    url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"

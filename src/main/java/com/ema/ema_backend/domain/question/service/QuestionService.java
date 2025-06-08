@@ -1,5 +1,7 @@
 package com.ema.ema_backend.domain.question.service;
 
+import com.ema.ema_backend.domain.chatroom.dto.PyPostChatFirstResponse;
+import com.ema.ema_backend.domain.chatroom.dto.PyPostChatRequest;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.service.MemberService;
 import com.ema.ema_backend.domain.memberquestion.MemberQuestion;
@@ -10,12 +12,14 @@ import com.ema.ema_backend.domain.question.repository.QuestionRepository;
 import com.ema.ema_backend.domain.type.ChapterType;
 import com.ema.ema_backend.domain.type.DifficultyType;
 import com.ema.ema_backend.global.exception.NotFoundException;
+import com.ema.ema_backend.global.exception.RemoteApiException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +31,10 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final MemberService memberService;
     private final MemberQuestionService memberQuestionService;
+    private final RestTemplate restTemplate;
+
+    @Value("${PY_SERVER_BASE_URI}")
+    private String baseUri;
 
     public ResponseEntity<RecommendedQuestionInfoResponse> getRecommendQuestion(Authentication authentication) {
         Optional<Member> optionalMember = memberService.checkPermission(authentication);
@@ -117,7 +125,7 @@ public class QuestionService {
     }
 
     @Transactional
-    public ResponseEntity<QuestionSet> generatePersonalizedQuestion(Authentication authentication) {
+    public ResponseEntity<QuestionSet> generatePersonalizedQuestion(Integer buttonNum, Authentication authentication) {
         Optional<Member> optionalMember = memberService.checkPermission(authentication);
         if (optionalMember.isEmpty()) {
             throw new NotFoundException("Member", "at QuestionService - getPersonalizedQuestions()");
@@ -126,22 +134,33 @@ public class QuestionService {
 
         // 학습 이력 정제하기
         // 사용자가 풀이한 이력 + 사용자의 선호 난이도 정도 제공?
+        PersonalizedQuestionRequest request = null;
+        if (buttonNum == 1){
+            request= new PersonalizedQuestionRequest(member.getLearningHistory().getRecommendedChapter1().toString(), member.getLearningHistory().getRecommendedChapter1().getChapterName(), "", member.getLearningHistory().getLearningLevel().toString(), "", "this is query. 좋은 문제 만들어주세요.");
+        } else if (buttonNum == 2){
+            request= new PersonalizedQuestionRequest(member.getLearningHistory().getRecommendedChapter2().toString(), member.getLearningHistory().getRecommendedChapter2().getChapterName(), "", member.getLearningHistory().getLearningLevel().toString(), "", "this is query. 좋은 문제 만들어주세요.");
+        } else if (buttonNum == 3){
+            request= new PersonalizedQuestionRequest(member.getLearningHistory().getRecommendedChapter3().toString(), member.getLearningHistory().getRecommendedChapter3().getChapterName(), "", member.getLearningHistory().getLearningLevel().toString(), "", "this is query. 좋은 문제 만들어주세요.");
+        } else {
+            throw new IllegalArgumentException("Invalid button pressed");
+        }
 
-
+        System.out.println(request);
         // RestTemplate 로 파이썬 서버 API 이용하고 결과 받아오기
-
-
+        PersonalizedQuestionResponse response = postGeneratePersonalizedQuestionToPy(request);
+        System.out.println(response);
         // 결과를 Question 에 저장
 
-        String title = "Agent가 생성한 문제입니다. 3 + 3 을 계산한 값은?";
-        String choice1 = "4";
-        String choice2 = "5";
-        String choice3 = "6";
-        String choice4 = "7";
-        String answer = "3";
-        String explanation = "왼손 손가락 3개를 펴고, 오른손 손가락 3개를 펴세요. 왼손부터 차례대로 세면 총 6개입니다. 따라서 답은 6입니다.";
-        DifficultyType difficultyType = DifficultyType.EASY;
-        ChapterType chapterType = ChapterType.CHAPTER_4;
+        String title = response.question();
+        String choice1 = response.choice1();
+        String choice2 = response.choice2();
+        String choice3 = response.choice3();
+        String choice4 = response.choice4();
+        String answer = response.answer();
+        String explanation = response.solution();
+        DifficultyType difficultyType = DifficultyType.valueOf(response.difficulty());
+        ChapterType chapterType = ChapterType.getChapterType(response.chapter());
+        String ai_summary = response.ai_summary();
 
         // Member와 매핑 (MemberQuestion에도 추가)
         Question question = Question.builder()
@@ -152,6 +171,7 @@ public class QuestionService {
                 .choice4(choice4)
                 .answer(answer)
                 .explanation(explanation)
+                .aiSummary(ai_summary)
                 .difficultyType(difficultyType)
                 .chapterType(chapterType)
                 .build();
@@ -224,5 +244,31 @@ public class QuestionService {
 
         memberQuestionService.createMemberQuestion(member, question, Boolean.valueOf(req.correctOnFirstTry()));
         return ResponseEntity.ok().build();
+    }
+
+
+    @Transactional
+    public PersonalizedQuestionResponse postGeneratePersonalizedQuestionToPy(PersonalizedQuestionRequest req){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // HttpEntity에 바디와 헤더 담기
+        HttpEntity<PersonalizedQuestionRequest> httpEntity = new HttpEntity<>(req, headers);
+
+        // RestTemplate으로 POST 요청 보내기
+        ResponseEntity<PersonalizedQuestionResponse> responseEntity = restTemplate.postForEntity(
+                baseUri + "/qnantitle",
+                httpEntity,
+                PersonalizedQuestionResponse.class
+        );
+
+        // HTTP 상태 코드 체크 (200 OK 등)
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            // 8) 바디에 담긴 QuestionResponse 객체 꺼내기
+            return responseEntity.getBody();
+        } else {
+            // 오류 응답 처리 (예외 던지기 등)
+            throw new RemoteApiException("원격 서버 응답 실패: HTTP " + responseEntity.getStatusCode() + "," + baseUri + "/quantitle");
+        }
     }
 }
