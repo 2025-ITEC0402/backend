@@ -9,13 +9,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -117,5 +115,34 @@ public class MemberController {
     @PutMapping("/learning-history")
     public ResponseEntity<Void> updateLearningHistory(Authentication authentication) {
         return memberService.updateLearningHistory(authentication);
+    }
+
+    @Operation(
+            summary = "학습 단원 완료 처리", // API의 핵심 기능을 한 줄로 요약
+            description = """
+    로그인한 사용자가 특정 단원의 학습을 완료했음을 기록합니다.
+    요청 시 Authorization 헤더에 유효한 Bearer 토큰이 포함되어야 합니다.
+    """ // API에 대한 상세 설명
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "단원 완료 처리 성공",
+                    content = @Content(schema = @Schema(implementation = Void.class)) // 성공 시 반환값이 없음을 명시
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 chapterId 요청",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증되지 않은 사용자",
+                    content = @Content
+            )
+    })
+    @PostMapping("/complete")
+    public ResponseEntity<Void> postCompletedChapter(@RequestParam("chapterId") Integer chapterId, Authentication authentication) {
+        return memberService.postCompletedChapter(chapterId, authentication);
     }
 }

@@ -96,4 +96,16 @@ public class MemberService {
         member.getLearningHistory().update(chapter1, chapter2, chapter3, goal, member);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @Transactional
+    public ResponseEntity<Void> postCompletedChapter(Integer chapterId, Authentication authentication){
+        Optional<Member> optionalMember = checkPermission(authentication);
+        if (optionalMember.isEmpty()) {
+            throw new NotFoundException("Member", " ");
+        }
+        Member member = optionalMember.get();
+
+        member.getLearningHistory().getCompletedChapters().add(chapterId);
+        return ResponseEntity.ok().build();
+    }
 }

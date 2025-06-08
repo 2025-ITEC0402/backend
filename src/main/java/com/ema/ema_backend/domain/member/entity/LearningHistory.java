@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Getter
 public class LearningHistory extends BaseEntityWithUpdatedAt {
@@ -25,6 +28,14 @@ public class LearningHistory extends BaseEntityWithUpdatedAt {
     private LearningLevelType learningLevel;
 
     private String goal;
+
+    @ElementCollection(fetch = FetchType.LAZY) // LAZY 로딩을 권장합니다.
+    @CollectionTable(
+            name = "completed_chapter", // 생성될 테이블의 이름
+            joinColumns = @JoinColumn(name = "learning_history_id") // LearningHistory를 참조하는 외래 키
+    )
+    @Column(name = "chapter_number") // 컬렉션에 저장될 값의 컬럼 이름
+    private Set<Integer> completedChapters = new HashSet<>();
 
     @Setter
     @OneToOne
