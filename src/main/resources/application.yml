@@ -11,6 +11,8 @@ spring:
   servlet:
     multipart:
       enabled: true
+      max-file-size: 10MB       # 개별 파일의 최대 크기 (예: 10MB)
+      max-request-size: 10MB    # 요청 전체의 최대 크기 (파일 포함)
     encoding:
       charset: UTF-8
       force: true
