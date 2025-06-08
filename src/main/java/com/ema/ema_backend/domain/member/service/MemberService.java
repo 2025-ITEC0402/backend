@@ -105,7 +105,18 @@ public class MemberService {
         }
         Member member = optionalMember.get();
 
-        member.getLearningHistory().getCompletedChapters().add(chapterId);
-        return ResponseEntity.ok().build();
+        // 2. 학습 이력(LearningHistory) 존재 여부 확인 및 NPE 방지
+        LearningHistory learningHistory = member.getLearningHistory();
+        if (learningHistory == null) {
+            throw new NotFoundException("LearningHistory", " ");
+        }
+
+        boolean isAdded = learningHistory.getCompletedChapters().add(chapterId);
+
+        if (!isAdded) {
+            System.out.println("Chapter " + chapterId + " was already completed.");
+            return new ResponseEntity<>(HttpStatus.ALREADY_REPORTED);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
