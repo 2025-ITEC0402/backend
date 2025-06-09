@@ -134,6 +134,7 @@ public class QuestionService {
                 .chapterType(ChapterType.getChapterType(response.chapter()))
                 .aiSummary(response.ai_summary())
                 .build();
+        System.out.println("response : " + response.chapter() + " Stored in DB : " + q1.getChapter().toString());
         questionRepository.save(q1);
         System.out.println("QuestionSerivice - 첫 번째 문제 저장 완료... questionId = " + q1.getId() + " (1/3)");
         // 2번 문제 생성
@@ -235,6 +236,11 @@ public class QuestionService {
         }
         Question question = optionalQuestion.get();
 
+        for (MemberQuestion mq : member.getMemberQuestions()){
+            if (mq.getQuestion().getId().equals(id)){
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+        }
         memberQuestionService.createMemberQuestion(member, question, Boolean.valueOf(req.correctOnFirstTry()));
         return ResponseEntity.ok().build();
     }
