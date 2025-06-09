@@ -10,6 +10,8 @@ import com.ema.ema_backend.domain.member.repository.LearningHistoryRepository;
 import com.ema.ema_backend.domain.member.repository.MemberRepository;
 import com.ema.ema_backend.domain.memberquestion.MemberQuestion;
 import com.ema.ema_backend.domain.memberquestion.service.MemberQuestionService;
+import com.ema.ema_backend.domain.question.dto.PersonalizedQuestionGeneratedResponse;
+import com.ema.ema_backend.domain.question.service.QuestionService;
 import com.ema.ema_backend.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +36,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final LearningHistoryRepository learningHistoryRepository;
     private final MemberQuestionService memberQuestionService;
+    private final QuestionService questionService;
     private final GeminiService geminiService;
     private final JsonParsingService jsonParsingService;
 
@@ -105,15 +108,28 @@ public class MemberService {
         // RestTemplate 으로 LLM 호출 후 학습 이력 갱신하기
         System.out.println(updateLearningHistoryPrompt);
 
-
         String geminiOutput = geminiService.getGeminiResponse(updateLearningHistoryPrompt + userData);
         System.out.println("Gemini 결과 " + geminiOutput);
         // 결과 json 파싱
-        LearningRecommendation dto = jsonParsingService.parse(geminiOutput);
+        LearningRecommendation parsedOutput = jsonParsingService.parse(geminiOutput);
 
-        System.out.println(dto);
 
-        member.getLearningHistory().update(dto.recommendedChapter1(), dto.recommendedChapter2(), dto.recommendedChapter3(), dto.goal(), member);
+        // 생성한 문제의 id 까지 업데이트
+        member.getLearningHistory().update(
+                parsedOutput.recommendedChapter1(),
+                parsedOutput.recommendedChapter2(),
+                parsedOutput.recommendedChapter3(),
+                parsedOutput.learningLevel(),
+                parsedOutput.goal(),
+                member);
+        // 업데이트된 학습 이력을 이용해 문제를 생성해오자
+        PersonalizedQuestionGeneratedResponse response = questionService.generatePersonalizedQuestion(userData, member);
+
+        member.getLearningHistory().updateQuestionId(
+                response.questionId1(),
+                response.questionId2(),
+                response.questionId3()
+        );
 //        String chapter1 = "3";
 //        String chapter2 = "6";
 //        String chapter3 = "7";

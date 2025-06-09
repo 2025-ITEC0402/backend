@@ -89,29 +89,29 @@ public class QuestionController {
         return questionService.deleteMyQuestions(authentication);
     }
 
-    @Operation(
-            summary = "개인화된 문제 1개 생성",
-            description = "JWT 인증 토큰을 기반으로, 사용자의 학습 이력 및 추천 정보를 바탕으로 개인화된 문제를 1개 생성합니다.",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "개인화 문제 생성 성공",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = QuestionSet.class)
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "인증되지 않음",
-                            content = @Content
-                    )
-            }
-    )
-    @PostMapping("/generate")
-    public ResponseEntity<QuestionSet> generatePersonalizedQuestion(@RequestParam Integer buttonNum, Authentication authentication) {
-        return questionService.generatePersonalizedQuestion(buttonNum, authentication);
-    }
+//    @Operation(
+//            summary = "개인화된 문제 1개 생성",
+//            description = "JWT 인증 토큰을 기반으로, 사용자의 학습 이력 및 추천 정보를 바탕으로 개인화된 문제를 1개 생성합니다.",
+//            responses = {
+//                    @ApiResponse(
+//                            responseCode = "200",
+//                            description = "개인화 문제 생성 성공",
+//                            content = @Content(
+//                                    mediaType = "application/json",
+//                                    schema = @Schema(implementation = QuestionSet.class)
+//                            )
+//                    ),
+//                    @ApiResponse(
+//                            responseCode = "401",
+//                            description = "인증되지 않음",
+//                            content = @Content
+//                    )
+//            }
+//    )
+//    @PostMapping("/generate")
+//    public ResponseEntity<QuestionSet> generatePersonalizedQuestion(@RequestParam Integer buttonNum, Authentication authentication) {
+//        return questionService.generatePersonalizedQuestion(buttonNum, authentication);
+//    }
 
     @Operation(
             summary = "id로 문제 조회",

@@ -46,32 +46,16 @@ public class QuestionService {
         List<RecommendSet> recommendSets = new ArrayList<>();
 
         ChapterType chapterType1 = member.getLearningHistory().getRecommendedChapter1();
-        System.out.println(chapterType1.toString());
-        Optional<Question> optionalQuestion = questionRepository.findByChapterName(member.getId(), chapterType1.toString());
-        if (optionalQuestion.isEmpty()) {
-            throw new NotFoundException("Question", "at QuestionService - getRecommendQuestion()");
-        }
-        Question question = optionalQuestion.get();
-        RecommendSet qs1 = new RecommendSet(question.getId(), chapterType1.getChapterName(), chapterType1.toString(), "EASY");
+        RecommendSet qs1 = new RecommendSet(member.getLearningHistory().getRecommendedQuestion1(), chapterType1.getChapterName(), chapterType1.toString(), "EASY");
         recommendSets.add(qs1);
 
 
         ChapterType chapterType2 = member.getLearningHistory().getRecommendedChapter2();
-        optionalQuestion = questionRepository.findByChapterName(member.getId(), chapterType2.toString());
-        if (optionalQuestion.isEmpty()) {
-            throw new NotFoundException("Question", "at QuestionService - getRecommendQuestion()");
-        }
-        question = optionalQuestion.get();
-        RecommendSet qs2 = new RecommendSet(question.getId(), chapterType2.getChapterName(), chapterType2.toString(), "NORMAL");
+        RecommendSet qs2 = new RecommendSet(member.getLearningHistory().getRecommendedQuestion2(), chapterType2.getChapterName(), chapterType2.toString(), "NORMAL");
         recommendSets.add(qs2);
 
         ChapterType chapterType3 = member.getLearningHistory().getRecommendedChapter3();
-        optionalQuestion = questionRepository.findByChapterName(member.getId(), chapterType3.toString());
-        if (optionalQuestion.isEmpty()) {
-            throw new NotFoundException("Question", "at QuestionService - getRecommendQuestion()");
-        }
-        question = optionalQuestion.get();
-        RecommendSet qs3 = new RecommendSet(question.getId(), chapterType3.getChapterName(), chapterType3.toString(), "HARD");
+        RecommendSet qs3 = new RecommendSet(member.getLearningHistory().getRecommendedQuestion3(), chapterType3.getChapterName(), chapterType3.toString(), "HARD");
         recommendSets.add(qs3);
 
         RecommendedQuestionInfoResponse response = new RecommendedQuestionInfoResponse(recommendSets);
@@ -125,75 +109,83 @@ public class QuestionService {
     }
 
     @Transactional
-    public ResponseEntity<QuestionSet> generatePersonalizedQuestion(Integer buttonNum, Authentication authentication) {
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
-        if (optionalMember.isEmpty()) {
-            throw new NotFoundException("Member", "at QuestionService - getPersonalizedQuestions()");
-        }
-        Member member = optionalMember.get();
-
+    public PersonalizedQuestionGeneratedResponse generatePersonalizedQuestion(String userData, Member member) {
         // 학습 이력 정제하기
         // 사용자가 풀이한 이력 + 사용자의 선호 난이도 정도 제공?
-        PersonalizedQuestionRequest request = null;
-        if (buttonNum == 1){
-            request= new PersonalizedQuestionRequest(member.getLearningHistory().getRecommendedChapter1().toString(), member.getLearningHistory().getRecommendedChapter1().getChapterName(), "", member.getLearningHistory().getLearningLevel().toString(), "", "this is query. 좋은 문제 만들어주세요.");
-        } else if (buttonNum == 2){
-            request= new PersonalizedQuestionRequest(member.getLearningHistory().getRecommendedChapter2().toString(), member.getLearningHistory().getRecommendedChapter2().getChapterName(), "", member.getLearningHistory().getLearningLevel().toString(), "", "this is query. 좋은 문제 만들어주세요.");
-        } else if (buttonNum == 3){
-            request= new PersonalizedQuestionRequest(member.getLearningHistory().getRecommendedChapter3().toString(), member.getLearningHistory().getRecommendedChapter3().getChapterName(), "", member.getLearningHistory().getLearningLevel().toString(), "", "this is query. 좋은 문제 만들어주세요.");
-        } else {
-            throw new IllegalArgumentException("Invalid button pressed");
-        }
 
-        System.out.println(request);
-        // RestTemplate 로 파이썬 서버 API 이용하고 결과 받아오기
+
+        // 1번 문제 생성 - RestTemplate 로 파이썬 서버 API 이용하고 결과 받아오기
+        PersonalizedQuestionRequest request = new PersonalizedQuestionRequest(
+                member.getLearningHistory().getRecommendedChapter1().toString(),
+                member.getLearningHistory().getRecommendedChapter1().getChapterName(),
+                userData,
+                member.getLearningHistory().getLearningLevel().toString(),
+                "");
         PersonalizedQuestionResponse response = postGeneratePersonalizedQuestionToPy(request);
-        System.out.println(response);
+
         // 결과를 Question 에 저장
-
-        String title = response.question();
-        String choice1 = response.choice1();
-        String choice2 = response.choice2();
-        String choice3 = response.choice3();
-        String choice4 = response.choice4();
-        String answer = response.answer();
-        String explanation = response.solution();
-        DifficultyType difficultyType = DifficultyType.valueOf(response.difficulty());
-        ChapterType chapterType = ChapterType.getChapterType(response.chapter());
-        String ai_summary = response.ai_summary();
-
-        // Member와 매핑 (MemberQuestion에도 추가)
-        Question question = Question.builder()
-                .title(title)
-                .choice1(choice1)
-                .choice2(choice2)
-                .choice3(choice3)
-                .choice4(choice4)
-                .answer(answer)
-                .explanation(explanation)
-                .aiSummary(ai_summary)
-                .difficultyType(difficultyType)
-                .chapterType(chapterType)
+        Question q1 = Question.builder()
+                .title(response.question())
+                .choice1(response.choice1())
+                .choice2(response.choice2())
+                .choice3(response.choice3())
+                .choice4(response.choice4())
+                .answer(response.answer())
+                .explanation(response.solution())
+                .difficultyType(DifficultyType.valueOf(response.difficulty()))
+                .chapterType(ChapterType.getChapterType(response.chapter()))
+                .aiSummary(response.ai_summary())
                 .build();
+        questionRepository.save(q1);
 
-        questionRepository.save(question);
+        // 2번 문제 생성
+        request = new PersonalizedQuestionRequest(
+                member.getLearningHistory().getRecommendedChapter2().toString(),
+                member.getLearningHistory().getRecommendedChapter2().getChapterName(),
+                userData,
+                member.getLearningHistory().getLearningLevel().toString(),
+                "");
+        response = postGeneratePersonalizedQuestionToPy(request);
 
-        return new ResponseEntity<>(
-                new QuestionSet(
-                        question.getId(),
-                        question.getTitle(),
-                        question.getChoice1(),
-                        question.getChoice2(),
-                        question.getChoice3(),
-                        question.getChoice4(),
-                        question.getAnswer(),
-                        question.getExplanation(),
-                        question.getAiSummary(),
-                        question.getDifficulty().toString(),
-                        question.getChapter().toString()
-                ),
-                HttpStatus.OK
-        );
+        // 결과를 Question 에 저장
+        Question q2 = Question.builder()
+                .title(response.question())
+                .choice1(response.choice1())
+                .choice2(response.choice2())
+                .choice3(response.choice3())
+                .choice4(response.choice4())
+                .answer(response.answer())
+                .explanation(response.solution())
+                .difficultyType(DifficultyType.valueOf(response.difficulty()))
+                .chapterType(ChapterType.getChapterType(response.chapter()))
+                .aiSummary(response.ai_summary())
+                .build();
+        questionRepository.save(q2);
+
+        // 2번 문제 생성
+        request = new PersonalizedQuestionRequest(
+                member.getLearningHistory().getRecommendedChapter3().toString(),
+                member.getLearningHistory().getRecommendedChapter3().getChapterName(),
+                userData,
+                member.getLearningHistory().getLearningLevel().toString(),
+                "");
+        response = postGeneratePersonalizedQuestionToPy(request);
+
+        // 결과를 Question 에 저장
+        Question q3 = Question.builder()
+                .title(response.question())
+                .choice1(response.choice1())
+                .choice2(response.choice2())
+                .choice3(response.choice3())
+                .choice4(response.choice4())
+                .answer(response.answer())
+                .explanation(response.solution())
+                .difficultyType(DifficultyType.valueOf(response.difficulty()))
+                .chapterType(ChapterType.getChapterType(response.chapter()))
+                .aiSummary(response.ai_summary())
+                .build();
+        questionRepository.save(q3);
+        return new PersonalizedQuestionGeneratedResponse(q1.getId(), q2.getId(), q3.getId());
     }
 
     @Transactional
@@ -257,7 +249,7 @@ public class QuestionService {
 
         // RestTemplate으로 POST 요청 보내기
         ResponseEntity<PersonalizedQuestionResponse> responseEntity = restTemplate.postForEntity(
-                baseUri + "/qnantitle",
+                baseUri + "/newquestions",
                 httpEntity,
                 PersonalizedQuestionResponse.class
         );
