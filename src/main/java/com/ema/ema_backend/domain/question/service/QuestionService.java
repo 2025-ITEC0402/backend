@@ -3,6 +3,7 @@ package com.ema.ema_backend.domain.question.service;
 import com.ema.ema_backend.domain.chatroom.dto.PyPostChatFirstResponse;
 import com.ema.ema_backend.domain.chatroom.dto.PyPostChatRequest;
 import com.ema.ema_backend.domain.member.entity.Member;
+import com.ema.ema_backend.domain.member.service.AuthenticationService;
 import com.ema.ema_backend.domain.member.service.MemberService;
 import com.ema.ema_backend.domain.memberquestion.MemberQuestion;
 import com.ema.ema_backend.domain.memberquestion.service.MemberQuestionService;
@@ -29,15 +30,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class QuestionService {
     private final QuestionRepository questionRepository;
-    private final MemberService memberService;
     private final MemberQuestionService memberQuestionService;
     private final RestTemplate restTemplate;
+    private final AuthenticationService authenticationService;
 
     @Value("${PY_SERVER_BASE_URI}")
     private String baseUri;
 
     public ResponseEntity<RecommendedQuestionInfoResponse> getRecommendQuestion(Authentication authentication) {
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()) {
             throw new NotFoundException("Member", "at QuestionService - getRecommendQuestion()");
         }
@@ -64,7 +65,7 @@ public class QuestionService {
 
     @Transactional
     public ResponseEntity<QuestionsInfoResponse> get3RandomQuestions(Authentication authentication) {
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()) {
             throw new NotFoundException("Member", "at QuestionService - get3RandomQuestions()");
         }
@@ -94,7 +95,7 @@ public class QuestionService {
 
     @Transactional
     public ResponseEntity<Void> deleteMyQuestions(Authentication authentication) {
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()) {
             throw new NotFoundException("Member", "at QuestionService - deleteMyQuestions()");
         }
@@ -122,7 +123,7 @@ public class QuestionService {
                 member.getLearningHistory().getLearningLevel().toString(),
                 "");
         PersonalizedQuestionResponse response = postGeneratePersonalizedQuestionToPy(request);
-
+        System.out.println("첫 번째 문제 생성 완료... ");
         // 결과를 Question 에 저장
         Question q1 = Question.builder()
                 .title(response.question())
@@ -190,7 +191,7 @@ public class QuestionService {
 
     @Transactional
     public ResponseEntity<QuestionSet> getQuestionById(Long id, Authentication authentication) {
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()) {
             throw new NotFoundException("Member", "at QuestionService - getQuestionById()");
         }
@@ -222,7 +223,7 @@ public class QuestionService {
 
     @Transactional
     public ResponseEntity<Void> checkAnswer(Long id, CheckAnswerRequest req, Authentication authentication) {
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()) {
             throw new NotFoundException("Member", "at QuestionService - checkAnswer()");
         }
@@ -260,7 +261,7 @@ public class QuestionService {
             return responseEntity.getBody();
         } else {
             // 오류 응답 처리 (예외 던지기 등)
-            throw new RemoteApiException("원격 서버 응답 실패: HTTP " + responseEntity.getStatusCode() + "," + baseUri + "/quantitle");
+            throw new RemoteApiException("원격 서버 응답 실패: HTTP " + responseEntity.getStatusCode() + "," + baseUri + "/newquestions");
         }
     }
 }
