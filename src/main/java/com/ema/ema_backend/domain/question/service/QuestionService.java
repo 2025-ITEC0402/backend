@@ -1,10 +1,7 @@
 package com.ema.ema_backend.domain.question.service;
 
-import com.ema.ema_backend.domain.chatroom.dto.PyPostChatFirstResponse;
-import com.ema.ema_backend.domain.chatroom.dto.PyPostChatRequest;
 import com.ema.ema_backend.domain.member.entity.Member;
 import com.ema.ema_backend.domain.member.service.AuthenticationService;
-import com.ema.ema_backend.domain.member.service.MemberService;
 import com.ema.ema_backend.domain.memberquestion.MemberQuestion;
 import com.ema.ema_backend.domain.memberquestion.service.MemberQuestionService;
 import com.ema.ema_backend.domain.question.Question;
@@ -110,20 +107,20 @@ public class QuestionService {
     }
 
     @Transactional
-    public PersonalizedQuestionGeneratedResponse generatePersonalizedQuestion(String userData, Member member) {
+    public PersonalizedQuestionGeneratedResponse generatePersonalizedQuestion(Member member) {
         // 학습 이력 정제하기
         // 사용자가 풀이한 이력 + 사용자의 선호 난이도 정도 제공?
 
 
         // 1번 문제 생성 - RestTemplate 로 파이썬 서버 API 이용하고 결과 받아오기
         PersonalizedQuestionRequest request = new PersonalizedQuestionRequest(
-                member.getLearningHistory().getRecommendedChapter1().toString(),
                 member.getLearningHistory().getRecommendedChapter1().getChapterName(),
-                userData,
-                member.getLearningHistory().getLearningLevel().toString(),
+                member.getLearningHistory().getRecommendedChapter1().toString(),
+                member.getLearningHistory().getGoal(),
+                "EASY",
                 "");
         PersonalizedQuestionResponse response = postGeneratePersonalizedQuestionToPy(request);
-        System.out.println("첫 번째 문제 생성 완료... ");
+        System.out.println("QuestionSerivice - 첫 번째 문제 생성 완료... ");
         // 결과를 Question 에 저장
         Question q1 = Question.builder()
                 .title(response.question())
@@ -131,23 +128,23 @@ public class QuestionService {
                 .choice2(response.choice2())
                 .choice3(response.choice3())
                 .choice4(response.choice4())
-                .answer(response.answer())
+                .answer(response.answer().toString())
                 .explanation(response.solution())
                 .difficultyType(DifficultyType.valueOf(response.difficulty()))
                 .chapterType(ChapterType.getChapterType(response.chapter()))
                 .aiSummary(response.ai_summary())
                 .build();
         questionRepository.save(q1);
-
+        System.out.println("QuestionSerivice - 첫 번째 문제 저장 완료... questionId = " + q1.getId() + " (1/3)");
         // 2번 문제 생성
         request = new PersonalizedQuestionRequest(
-                member.getLearningHistory().getRecommendedChapter2().toString(),
                 member.getLearningHistory().getRecommendedChapter2().getChapterName(),
-                userData,
-                member.getLearningHistory().getLearningLevel().toString(),
+                member.getLearningHistory().getRecommendedChapter2().toString(),
+                member.getLearningHistory().getGoal(),
+                "NORMAL",
                 "");
         response = postGeneratePersonalizedQuestionToPy(request);
-
+        System.out.println("QuestionSerivice - 두 번째 문제 생성 완료... ");
         // 결과를 Question 에 저장
         Question q2 = Question.builder()
                 .title(response.question())
@@ -155,23 +152,24 @@ public class QuestionService {
                 .choice2(response.choice2())
                 .choice3(response.choice3())
                 .choice4(response.choice4())
-                .answer(response.answer())
+                .answer(response.answer().toString())
                 .explanation(response.solution())
                 .difficultyType(DifficultyType.valueOf(response.difficulty()))
                 .chapterType(ChapterType.getChapterType(response.chapter()))
                 .aiSummary(response.ai_summary())
                 .build();
         questionRepository.save(q2);
+        System.out.println("QuestionSerivice - 두 번째 문제 저장 완료... questionId = " + q2.getId() + " (2/3)");
 
         // 2번 문제 생성
         request = new PersonalizedQuestionRequest(
-                member.getLearningHistory().getRecommendedChapter3().toString(),
                 member.getLearningHistory().getRecommendedChapter3().getChapterName(),
-                userData,
-                member.getLearningHistory().getLearningLevel().toString(),
+                member.getLearningHistory().getRecommendedChapter3().toString(),
+                member.getLearningHistory().getGoal(),
+                "HARD",
                 "");
         response = postGeneratePersonalizedQuestionToPy(request);
-
+        System.out.println("QuestionSerivice - 세 번째 문제 생성 완료... ");
         // 결과를 Question 에 저장
         Question q3 = Question.builder()
                 .title(response.question())
@@ -179,13 +177,15 @@ public class QuestionService {
                 .choice2(response.choice2())
                 .choice3(response.choice3())
                 .choice4(response.choice4())
-                .answer(response.answer())
+                .answer(response.answer().toString())
                 .explanation(response.solution())
                 .difficultyType(DifficultyType.valueOf(response.difficulty()))
                 .chapterType(ChapterType.getChapterType(response.chapter()))
                 .aiSummary(response.ai_summary())
                 .build();
         questionRepository.save(q3);
+        System.out.println("QuestionSerivice - 세 번째 문제 저장 완료... questionId = " + q3.getId() + " (3/3)");
+
         return new PersonalizedQuestionGeneratedResponse(q1.getId(), q2.getId(), q3.getId());
     }
 
