@@ -24,6 +24,11 @@ public class LearningHistory extends BaseEntityWithUpdatedAt {
     private ChapterType recommendedChapter2;
     @Enumerated(EnumType.STRING)
     private ChapterType recommendedChapter3;
+
+    private Long recommendedQuestion1;
+    private Long recommendedQuestion2;
+    private Long recommendedQuestion3;
+
     @Enumerated(EnumType.STRING)
     private LearningLevelType learningLevel;
 
@@ -46,14 +51,24 @@ public class LearningHistory extends BaseEntityWithUpdatedAt {
         this.recommendedChapter1 = ChapterType.CHAPTER_1;
         this.recommendedChapter2 = ChapterType.CHAPTER_2;
         this.recommendedChapter3 = ChapterType.CHAPTER_3;
+        this.recommendedQuestion1 = 0L;
+        this.recommendedQuestion2 = 0L;
+        this.recommendedQuestion3 = 0L;
         this.learningLevel = LearningLevelType.BEGINNER;
     }
 
-    public void update(String chapter1, String chapter2, String chapter3, String goal, Member member) {
+    public void update(String chapter1, String chapter2, String chapter3, String learningLevel, String goal, Member member) {
         this.recommendedChapter1 = ChapterType.fromStringNumber(chapter1);
         this.recommendedChapter2 = ChapterType.fromStringNumber(chapter2);
         this.recommendedChapter3 = ChapterType.fromStringNumber(chapter3);
+        this.learningLevel = LearningLevelType.valueOf(learningLevel);
         this.goal = goal;
         this.member = member;
+    }
+
+    public void updateQuestionId(Long question1, Long question2, Long question3){
+        this.recommendedQuestion1 = question1;
+        this.recommendedQuestion2 = question2;
+        this.recommendedQuestion3 = question3;
     }
 }

@@ -29,6 +29,7 @@ public class Question extends BaseEntity {
 
     private String answer;
 
+    @Lob
     private String explanation;
     private String aiSummary;
 

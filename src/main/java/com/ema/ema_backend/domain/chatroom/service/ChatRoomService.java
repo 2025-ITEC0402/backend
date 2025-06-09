@@ -4,6 +4,7 @@ import com.ema.ema_backend.domain.chatroom.ChatRoom;
 import com.ema.ema_backend.domain.chatroom.dto.*;
 import com.ema.ema_backend.domain.chatroom.repository.ChatRoomRepository;
 import com.ema.ema_backend.domain.member.entity.Member;
+import com.ema.ema_backend.domain.member.service.AuthenticationService;
 import com.ema.ema_backend.domain.member.service.MemberService;
 import com.ema.ema_backend.domain.message.Message;
 import com.ema.ema_backend.domain.message.service.MessageService;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
+    private final AuthenticationService authenticationService;
     private final MemberService memberService;
     private final MessageService messageService;
     private final RestTemplate restTemplate;
@@ -40,7 +42,7 @@ public class ChatRoomService {
 
     @Transactional
     public ResponseEntity<FirstChatResponse> postNewChat(ChatRequest req, Authentication authentication){
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if(optionalMember.isEmpty()){
             throw new NotFoundException("Member", "at ChatRoomService - postNewChat()");
         }
@@ -93,7 +95,7 @@ public class ChatRoomService {
 
     @Transactional
     public ResponseEntity<ChatResponse> postChat(Long ChatRoomId, String req, Authentication authentication){
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()){
             throw new NotFoundException("Member", "at ChatRoomService - postChat()");
         }
@@ -150,7 +152,7 @@ public class ChatRoomService {
 
     @Transactional
     public ResponseEntity<ChatRoomResponse> getChatRoom(Long chatRoomId, Authentication authentication){
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()){
             throw new NotFoundException("Member", "at ChatRoomService - getChatRoom()");
         }
@@ -181,7 +183,7 @@ public class ChatRoomService {
 
     @Transactional
     public ResponseEntity<Void> updateChatRoomTitle(Long chatRoomId, TitleUpdateRequest req, Authentication authentication){
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()){
             throw new NotFoundException("Member", "at ChatRoomService - updateChatRoomTitle()");
         }
@@ -202,7 +204,7 @@ public class ChatRoomService {
 
     @Transactional
     public ResponseEntity<Void> deleteChatRoom(Long chatRoomId, Authentication authentication){
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()){
             throw new NotFoundException("Member", "at ChatRoomService - deleteChatRoom()");
         }
@@ -231,7 +233,7 @@ public class ChatRoomService {
 
     @Transactional
     public ResponseEntity<ChatRoomInfoResponse> getChatRoomInfos(Authentication authentication){
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()){
             throw new NotFoundException("Member", "at ChatRoomService - getChatRoomInfos()");
         }
@@ -247,7 +249,7 @@ public class ChatRoomService {
 
     @Transactional
     public ResponseEntity<ChatResponse> postChatImg(Long ChatRoomId, MultipartFile file, String req, Authentication authentication) {
-        Optional<Member> optionalMember = memberService.checkPermission(authentication);
+        Optional<Member> optionalMember = authenticationService.checkPermission(authentication);
         if (optionalMember.isEmpty()){
             throw new NotFoundException("Member", "at ChatRoomService - postChat()");
         }
