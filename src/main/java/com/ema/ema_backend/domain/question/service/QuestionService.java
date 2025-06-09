@@ -256,7 +256,7 @@ public class QuestionService {
         );
 
         // HTTP 상태 코드 체크 (200 OK 등)
-        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+        if (responseEntity.getStatusCode() == HttpStatus.CREATED) {
             // 8) 바디에 담긴 QuestionResponse 객체 꺼내기
             return responseEntity.getBody();
         } else {
